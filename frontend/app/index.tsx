@@ -89,27 +89,59 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [countdown, setCountdown] = useState<{ text: string; isPast: boolean }>({ text: '', isPast: false });
+  const [selectedSeason, setSelectedSeason] = useState('current');
+  const [availableSeasons, setAvailableSeasons] = useState<string[]>([]);
+
+  const currentYear = new Date().getFullYear();
+  const historicYears = [currentYear.toString(), ...Array.from({ length: 5 }, (_, i) => (currentYear - 1 - i).toString())];
+
+  useEffect(() => {
+    checkAvailableSeasons();
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedSeason]);
+
+  const checkAvailableSeasons = async () => {
+    // Check which historic seasons have data
+    const available = ['current'];
+    for (const year of historicYears.slice(1)) { // Skip current year
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/schedule?season=${year}`);
+        const data = await response.json();
+        if (data?.MRData?.RaceTable?.Races && data.MRData.RaceTable.Races.length > 0) {
+          available.push(year);
+        }
+      } catch (error) {
+        console.log(`No data for ${year}`);
+      }
+    }
+    setAvailableSeasons(available);
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
+      const seasonParam = selectedSeason === 'current' ? 'current' : selectedSeason;
+      
       // Fetch race schedule
-      const scheduleResponse = await fetch(`${BACKEND_URL}/api/schedule`);
+      const scheduleResponse = await fetch(`${BACKEND_URL}/api/schedule?season=${seasonParam}`);
       const scheduleData = await scheduleResponse.json();
       if (scheduleData?.MRData?.RaceTable?.Races) {
         setRaces(scheduleData.MRData.RaceTable.Races);
       }
       
       // Fetch driver standings
-      const driverResponse = await fetch(`${BACKEND_URL}/api/standings/drivers`);
+      const driverResponse = await fetch(`${BACKEND_URL}/api/standings/drivers?season=${seasonParam}`);
       const driverData = await driverResponse.json();
       if (driverData?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings) {
         setDriverStandings(driverData.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 5));
       }
       
       // Fetch constructor standings
-      const constructorResponse = await fetch(`${BACKEND_URL}/api/standings/constructors`);
+      const constructorResponse = await fetch(`${BACKEND_URL}/api/standings/constructors?season=${seasonParam}`);
       const constructorData = await constructorResponse.json();
       if (constructorData?.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings) {
         setConstructorStandings(constructorData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3));
@@ -125,7 +157,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedSeason]);
 
   // Update countdown every minute
   useEffect(() => {
@@ -203,6 +235,34 @@ export default function HomeScreen() {
           <Text style={styles.subtitle}>Your ultimate F1 companion</Text>
         </View>
 
+        {/* Season Selector */}
+        {availableSeasons.length > 1 && (
+          <View style={styles.seasonSelector}>
+            <Text style={styles.seasonLabel}>Season:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {availableSeasons.map((season) => (
+                <TouchableOpacity
+                  key={season}
+                  style={[
+                    styles.seasonButton,
+                    selectedSeason === season && styles.seasonButtonActive,
+                  ]}
+                  onPress={() => setSelectedSeason(season)}
+                >
+                  <Text
+                    style={[
+                      styles.seasonButtonText,
+                      selectedSeason === season && styles.seasonButtonTextActive,
+                    ]}
+                  >
+                    {season === 'current' ? currentYear : season}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
         {/* Current Race */}
         {currentRace && (
           <View style={[styles.raceCard, { borderColor: '#FFD700' }]}>
@@ -239,17 +299,23 @@ export default function HomeScreen() {
 
         {/* Last Race */}
         {lastRace && (
-          <View style={[styles.raceCard, { opacity: 0.8 }]}>
-            <View style={styles.raceHeader}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
-              <Text style={[styles.raceLabel, { color: '#00D2BE' }]}>LAST RACE</Text>
-            </View>
-            <Text style={styles.raceName}>{lastRace.raceName}</Text>
-            <Text style={styles.raceLocation}>
-              {lastRace.Circuit.Location.locality}, {lastRace.Circuit.Location.country}
-            </Text>
-            <Text style={styles.raceCircuit}>{lastRace.Circuit.circuitName}</Text>
-          </View>
+          <Link href={`/race/${selectedSeason === 'current' ? currentYear : selectedSeason}/${lastRace.round}`} asChild>
+            <TouchableOpacity style={[styles.raceCard, { opacity: 0.8 }]}>
+              <View style={styles.raceHeader}>
+                <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
+                <Text style={[styles.raceLabel, { color: '#00D2BE' }]}>LAST RACE - VIEW RESULTS</Text>
+              </View>
+              <Text style={styles.raceName}>{lastRace.raceName}</Text>
+              <Text style={styles.raceLocation}>
+                {lastRace.Circuit.Location.locality}, {lastRace.Circuit.Location.country}
+              </Text>
+              <Text style={styles.raceCircuit}>{lastRace.Circuit.circuitName}</Text>
+              <View style={styles.viewResultsRow}>
+                <Text style={styles.viewResultsText}>View qualifying, sprint & race results</Text>
+                <Ionicons name="chevron-forward" size={20} color="#00D2BE" />
+              </View>
+            </TouchableOpacity>
+          </Link>
         )}
 
         {/* Championship Standings */}
@@ -448,6 +514,53 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginBottom: 12,
+  },
+  viewResultsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#2a2a2a',
+  },
+  viewResultsText: {
+    fontSize: 14,
+    color: '#00D2BE',
+    fontWeight: '600',
+  },
+  seasonSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  seasonLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginRight: 12,
+  },
+  seasonButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  seasonButtonActive: {
+    backgroundColor: '#E10600',
+    borderColor: '#E10600',
+  },
+  seasonButtonText: {
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '600',
+  },
+  seasonButtonTextActive: {
+    color: 'white',
   },
   countdownContainer: {
     flexDirection: 'row',
