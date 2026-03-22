@@ -239,7 +239,7 @@ export default function HomeScreen() {
         {availableSeasons.length > 1 && (
           <View style={styles.seasonSelector}>
             <Text style={styles.seasonLabel}>Season:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.seasonButtonsContainer}>
               {availableSeasons.map((season) => (
                 <TouchableOpacity
                   key={season}
@@ -259,7 +259,7 @@ export default function HomeScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </View>
         )}
 
@@ -540,6 +540,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
     marginRight: 12,
+  },
+  seasonButtonsContainer: {
+    flexDirection: 'row',
+    flex: 1,
   },
   seasonButton: {
     paddingHorizontal: 16,
