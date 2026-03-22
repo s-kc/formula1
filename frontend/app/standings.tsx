@@ -262,19 +262,18 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     padding: 16,
-    gap: 12,
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     paddingVertical: 12,
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#2a2a2a',
+    marginHorizontal: 6,
   },
   activeTab: {
     backgroundColor: '#2a1a1a',
@@ -293,7 +292,6 @@ const styles = StyleSheet.create({
   },
   standingsContainer: {
     padding: 16,
-    gap: 12,
   },
   standingCard: {
     flexDirection: 'row',
@@ -301,14 +299,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
     padding: 16,
-    gap: 12,
     borderWidth: 1,
     borderColor: '#2a2a2a',
+    marginBottom: 12,
   },
   positionSection: {
     width: 40,
     alignItems: 'center',
-    gap: 4,
+    marginRight: 12,
   },
   position: {
     fontSize: 20,
@@ -326,13 +324,13 @@ const styles = StyleSheet.create({
   driverNameSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     marginBottom: 4,
   },
   driverName: {
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+    marginRight: 8,
   },
   driverCode: {
     fontSize: 12,
@@ -359,10 +357,11 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     flexDirection: 'row',
-    gap: 16,
+    marginLeft: 16,
   },
   stat: {
     alignItems: 'center',
+    marginRight: 16,
   },
   statValue: {
     fontSize: 18,

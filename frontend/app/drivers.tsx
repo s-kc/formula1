@@ -3,9 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
 interface Driver {
   driverId: string;
   givenName: string;
@@ -15,7 +13,6 @@ interface Driver {
   code?: string;
   dateOfBirth?: string;
 }
-
 // Country flag emojis mapping
 const COUNTRY_FLAGS: { [key: string]: string } = {
   British: '🇬🇧',
@@ -36,23 +33,19 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   New_Zealander: '🇳🇿',
   Argentine: '🇦🇷',
 };
-
 function getFlagForNationality(nationality: string): string {
   return COUNTRY_FLAGS[nationality.replace(' ', '_')] || '🏁';
 }
-
 export default function DriversScreen() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
   const fetchDrivers = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${BACKEND_URL}/api/drivers`);
       const data = await response.json();
-      
       if (data?.MRData?.DriverTable?.Drivers) {
         // Sort drivers by permanent number
         const sortedDrivers = data.MRData.DriverTable.Drivers.sort((a: Driver, b: Driver) => {
@@ -69,21 +62,17 @@ export default function DriversScreen() {
       setRefreshing(false);
     }
   };
-
   useEffect(() => {
     fetchDrivers();
   }, []);
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchDrivers();
   };
-
   const filteredDrivers = drivers.filter((driver) => {
     const fullName = `${driver.givenName} ${driver.familyName}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
   });
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -94,7 +83,6 @@ export default function DriversScreen() {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
@@ -107,7 +95,6 @@ export default function DriversScreen() {
           <Text style={styles.headerTitle}>2025 F1 Drivers</Text>
           <Text style={styles.headerSubtitle}>{drivers.length} drivers on the grid</Text>
         </View>
-
         <View style={styles.driversContainer}>
           {filteredDrivers.map((driver) => (
             <Link key={driver.driverId} href={`/driver/${driver.driverId}`} asChild>
@@ -124,7 +111,6 @@ export default function DriversScreen() {
                     </View>
                   )}
                 </View>
-
                 <View style={styles.driverInfo}>
                   <Text style={styles.driverName}>
                     {driver.givenName} {driver.familyName}
@@ -134,7 +120,6 @@ export default function DriversScreen() {
                     <Text style={styles.nationality}>{driver.nationality}</Text>
                   </View>
                 </View>
-
                 <Ionicons name="chevron-forward" size={24} color="#999" />
               </TouchableOpacity>
             </Link>
@@ -144,7 +129,6 @@ export default function DriversScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -179,7 +163,6 @@ const styles = StyleSheet.create({
   },
   driversContainer: {
     padding: 16,
-    gap: 12,
   },
   driverCard: {
     flexDirection: 'row',
@@ -187,14 +170,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
     padding: 16,
-    gap: 12,
     borderWidth: 1,
     borderColor: '#2a2a2a',
+    marginBottom: 12,
   },
   driverHeader: {
-    gap: 4,
     alignItems: 'center',
     minWidth: 50,
+    marginRight: 12,
   },
   numberBadge: {
     backgroundColor: '#E10600',
@@ -222,7 +205,6 @@ const styles = StyleSheet.create({
   },
   driverInfo: {
     flex: 1,
-    gap: 4,
   },
   driverName: {
     fontSize: 16,
@@ -232,7 +214,6 @@ const styles = StyleSheet.create({
   nationalityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
   flag: {
     fontSize: 18,

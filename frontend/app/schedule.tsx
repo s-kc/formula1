@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
 interface Race {
   season: string;
   round: string;
@@ -25,21 +23,17 @@ interface Race {
   Qualifying?: { date: string; time: string };
   Sprint?: { date: string; time: string };
 }
-
 function getCountdown(raceDate: string, raceTime?: string): string {
   const dateTimeString = raceTime ? `${raceDate}T${raceTime}` : `${raceDate}T14:00:00Z`;
   const raceDateTime = new Date(dateTimeString);
   const now = new Date();
   const diff = raceDateTime.getTime() - now.getTime();
-
   if (diff < 0) {
     return 'Completed';
   }
-
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
   if (days > 0) {
     return `${days}d ${hours}h`;
   } else if (hours > 0) {
@@ -48,24 +42,20 @@ function getCountdown(raceDate: string, raceTime?: string): string {
     return `${minutes}m`;
   }
 }
-
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-
 export default function ScheduleScreen() {
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [countdown, setCountdown] = useState<{ [key: string]: string }>({});
-
   const fetchSchedule = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${BACKEND_URL}/api/schedule`);
       const data = await response.json();
-      
       if (data?.MRData?.RaceTable?.Races) {
         setRaces(data.MRData.RaceTable.Races);
       }
@@ -76,11 +66,9 @@ export default function ScheduleScreen() {
       setRefreshing(false);
     }
   };
-
   useEffect(() => {
     fetchSchedule();
   }, []);
-
   // Update countdowns every minute
   useEffect(() => {
     const updateCountdowns = () => {
@@ -90,18 +78,14 @@ export default function ScheduleScreen() {
       });
       setCountdown(newCountdowns);
     };
-
     updateCountdowns();
     const interval = setInterval(updateCountdowns, 60000); // Update every minute
-
     return () => clearInterval(interval);
   }, [races]);
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchSchedule();
   };
-
   // Find next race
   const getNextRace = () => {
     const now = new Date();
@@ -110,9 +94,7 @@ export default function ScheduleScreen() {
       return raceDateTime > now;
     });
   };
-
   const nextRace = getNextRace();
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -123,7 +105,6 @@ export default function ScheduleScreen() {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
@@ -157,14 +138,12 @@ export default function ScheduleScreen() {
             </Text>
           </View>
         )}
-
         {/* Full Schedule */}
         <View style={styles.scheduleContainer}>
           <Text style={styles.sectionTitle}>Full Season Calendar</Text>
           {races.map((race) => {
             const isNextRace = nextRace?.round === race.round;
             const isCompleted = countdown[race.round] === 'Completed';
-            
             return (
               <TouchableOpacity
                 key={race.round}
@@ -187,7 +166,6 @@ export default function ScheduleScreen() {
                     <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
                   )}
                 </View>
-
                 <Text style={styles.raceName}>{race.raceName}</Text>
                 <View style={styles.locationRow}>
                   <Ionicons name="location" size={14} color="#999" />
@@ -196,7 +174,6 @@ export default function ScheduleScreen() {
                 <Text style={styles.location}>
                   {race.Circuit.Location.locality}, {race.Circuit.Location.country}
                 </Text>
-
                 <View style={styles.dateRow}>
                   <View style={styles.dateInfo}>
                     <Ionicons name="calendar" size={14} color="#E10600" />
@@ -209,7 +186,6 @@ export default function ScheduleScreen() {
                     </View>
                   )}
                 </View>
-
                 {/* Weekend Schedule */}
                 {(race.Sprint || race.Qualifying) && (
                   <View style={styles.weekendSchedule}>
@@ -233,7 +209,6 @@ export default function ScheduleScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -264,7 +239,6 @@ const styles = StyleSheet.create({
   nextRaceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     marginBottom: 12,
   },
   nextRaceLabel: {
@@ -287,7 +261,6 @@ const styles = StyleSheet.create({
   countdownContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     marginBottom: 12,
   },
   countdownText: {
@@ -326,7 +299,6 @@ const styles = StyleSheet.create({
   raceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     marginBottom: 8,
   },
   roundBadge: {
@@ -360,7 +332,6 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     marginBottom: 4,
   },
   circuitName: {
@@ -380,7 +351,6 @@ const styles = StyleSheet.create({
   dateInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
   dateText: {
     fontSize: 14,
@@ -390,7 +360,6 @@ const styles = StyleSheet.create({
   countdownBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     backgroundColor: '#1a2a2a',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -403,7 +372,6 @@ const styles = StyleSheet.create({
   },
   weekendSchedule: {
     flexDirection: 'row',
-    gap: 8,
     marginTop: 12,
   },
   sessionBadge: {

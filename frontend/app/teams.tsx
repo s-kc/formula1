@@ -3,16 +3,13 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
 interface Constructor {
   constructorId: string;
   name: string;
   nationality: string;
   url?: string;
 }
-
 // Team colors mapping
 const TEAM_COLORS: { [key: string]: string } = {
   red_bull: '#0600EF',
@@ -29,7 +26,6 @@ const TEAM_COLORS: { [key: string]: string } = {
   sauber: '#00FF00',
   haas: '#FFFFFF',
 };
-
 // Country flag emojis mapping
 const COUNTRY_FLAGS: { [key: string]: string } = {
   British: '🇬🇧',
@@ -40,26 +36,21 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   American: '🇺🇸',
   Swiss: '🇨🇭',
 };
-
 function getTeamColor(constructorId: string): string {
   return TEAM_COLORS[constructorId] || '#999999';
 }
-
 function getFlagForNationality(nationality: string): string {
   return COUNTRY_FLAGS[nationality.replace(' ', '_')] || '🏁';
 }
-
 export default function TeamsScreen() {
   const [teams, setTeams] = useState<Constructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
   const fetchTeams = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${BACKEND_URL}/api/constructors`);
       const data = await response.json();
-      
       if (data?.MRData?.ConstructorTable?.Constructors) {
         setTeams(data.MRData.ConstructorTable.Constructors);
       }
@@ -70,16 +61,13 @@ export default function TeamsScreen() {
       setRefreshing(false);
     }
   };
-
   useEffect(() => {
     fetchTeams();
   }, []);
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchTeams();
   };
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -90,7 +78,6 @@ export default function TeamsScreen() {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
@@ -103,7 +90,6 @@ export default function TeamsScreen() {
           <Text style={styles.headerTitle}>2025 F1 Teams</Text>
           <Text style={styles.headerSubtitle}>{teams.length} constructors competing</Text>
         </View>
-
         <View style={styles.teamsContainer}>
           {teams.map((team) => (
             <Link key={team.constructorId} href={`/team/${team.constructorId}`} asChild>
@@ -114,7 +100,6 @@ export default function TeamsScreen() {
                     { backgroundColor: getTeamColor(team.constructorId) },
                   ]}
                 />
-                
                 <View style={styles.teamContent}>
                   <View style={styles.teamInfo}>
                     <Text style={styles.teamName}>{team.name}</Text>
@@ -123,7 +108,6 @@ export default function TeamsScreen() {
                       <Text style={styles.nationality}>{team.nationality}</Text>
                     </View>
                   </View>
-
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </View>
               </TouchableOpacity>
@@ -134,7 +118,6 @@ export default function TeamsScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -169,7 +152,6 @@ const styles = StyleSheet.create({
   },
   teamsContainer: {
     padding: 16,
-    gap: 12,
   },
   teamCard: {
     flexDirection: 'row',
@@ -187,11 +169,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    gap: 12,
   },
   teamInfo: {
     flex: 1,
-    gap: 6,
   },
   teamName: {
     fontSize: 18,
@@ -201,7 +181,6 @@ const styles = StyleSheet.create({
   nationalityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
   flag: {
     fontSize: 18,

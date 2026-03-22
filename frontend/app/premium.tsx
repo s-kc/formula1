@@ -3,37 +3,30 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
 interface SubscriptionPrice {
   tier: string;
   price: number;
   billing_period: string;
   discount_percentage?: number;
 }
-
 interface OneTimePurchase {
   type: string;
   price: number;
   name: string;
 }
-
 export default function PremiumScreen() {
   const [loading, setLoading] = useState(true);
   const [subscriptions, setSubscriptions] = useState<SubscriptionPrice[]>([]);
   const [oneTimePurchases, setOneTimePurchases] = useState<OneTimePurchase[]>([]);
   const [userSubscription, setUserSubscription] = useState<any>(null);
   const [userId, setUserId] = useState<string>('');
-
   useEffect(() => {
     loadUserAndPrices();
   }, []);
-
   const loadUserAndPrices = async () => {
     try {
       setLoading(true);
-      
       // Get or create user ID
       let storedUserId = await AsyncStorage.getItem('user_id');
       if (!storedUserId) {
@@ -41,18 +34,15 @@ export default function PremiumScreen() {
         await AsyncStorage.setItem('user_id', storedUserId);
       }
       setUserId(storedUserId);
-      
       // Fetch prices
       const pricesResponse = await fetch(`${BACKEND_URL}/api/subscription/prices`);
       const pricesData = await pricesResponse.json();
       setSubscriptions(pricesData.subscriptions);
       setOneTimePurchases(pricesData.one_time_purchases);
-      
       // Fetch user subscription status
       const subResponse = await fetch(`${BACKEND_URL}/api/subscription/${storedUserId}`);
       const subData = await subResponse.json();
       setUserSubscription(subData);
-      
     } catch (error) {
       console.error('Error loading subscription data:', error);
       Alert.alert('Error', 'Failed to load subscription information');
@@ -60,7 +50,6 @@ export default function PremiumScreen() {
       setLoading(false);
     }
   };
-
   const handleSubscribe = async (tier: string) => {
     try {
       Alert.alert(
@@ -75,7 +64,6 @@ export default function PremiumScreen() {
                 `${BACKEND_URL}/api/subscription/${userId}/subscribe?tier=${tier}`,
                 { method: 'POST' }
               );
-              
               if (response.ok) {
                 Alert.alert('Success!', 'Subscription activated! (Demo mode - no payment processed)');
                 loadUserAndPrices();
@@ -91,7 +79,6 @@ export default function PremiumScreen() {
       Alert.alert('Error', 'Failed to process subscription');
     }
   };
-
   const handlePurchase = async (itemType: string) => {
     try {
       Alert.alert(
@@ -106,7 +93,6 @@ export default function PremiumScreen() {
                 `${BACKEND_URL}/api/subscription/${userId}/purchase?item=${itemType}`,
                 { method: 'POST' }
               );
-              
               if (response.ok) {
                 Alert.alert('Success!', 'Purchase completed! (Demo mode - no payment processed)');
                 loadUserAndPrices();
@@ -122,7 +108,6 @@ export default function PremiumScreen() {
       Alert.alert('Error', 'Failed to process purchase');
     }
   };
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -133,7 +118,6 @@ export default function PremiumScreen() {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView style={styles.scrollView}>
@@ -155,11 +139,9 @@ export default function PremiumScreen() {
             </Text>
           </View>
         )}
-
         {/* Subscription Plans */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>💎 Subscription Plans</Text>
-          
           {subscriptions.map((sub) => (
             <TouchableOpacity
               key={sub.tier}
@@ -176,12 +158,10 @@ export default function PremiumScreen() {
                   </View>
                 )}
               </View>
-              
               <View style={styles.priceRow}>
                 <Text style={styles.price}>${sub.price}</Text>
                 <Text style={styles.billingPeriod}>/{sub.billing_period}</Text>
               </View>
-              
               <View style={styles.featuresList}>
                 <View style={styles.featureItem}>
                   <Ionicons name="checkmark" size={18} color="#00D2BE" />
@@ -208,7 +188,6 @@ export default function PremiumScreen() {
                   <Text style={styles.featureText}>Favorite driver tracking</Text>
                 </View>
               </View>
-              
               <View style={styles.subscribeButton}>
                 <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
                 <Ionicons name="arrow-forward" size={20} color="white" />
@@ -216,11 +195,9 @@ export default function PremiumScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
         {/* One-Time Purchases */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🛒 One-Time Purchases</Text>
-          
           {oneTimePurchases.map((item) => (
             <TouchableOpacity
               key={item.type}
@@ -235,48 +212,40 @@ export default function PremiumScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
         {/* Free vs Premium Comparison */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>📊 Free vs Premium</Text>
-          
           <View style={styles.comparisonTable}>
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Basic dashboard</Text>
               <Ionicons name="checkmark" size={20} color="#00D2BE" />
               <Ionicons name="checkmark" size={20} color="#00D2BE" />
             </View>
-            
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Current season only</Text>
               <Ionicons name="checkmark" size={20} color="#00D2BE" />
               <Ionicons name="close" size={20} color="#666" />
             </View>
-            
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Top 5 standings</Text>
               <Ionicons name="checkmark" size={20} color="#00D2BE" />
               <Ionicons name="close" size={20} color="#666" />
             </View>
-            
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Ads</Text>
               <Ionicons name="checkmark" size={20} color="#E10600" />
               <Ionicons name="close" size={20} color="#666" />
             </View>
-            
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Lock screen widgets</Text>
               <Ionicons name="close" size={20} color="#666" />
               <Ionicons name="checkmark" size={20} color="#00D2BE" />
             </View>
-            
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Historical data</Text>
               <Ionicons name="close" size={20} color="#666" />
               <Ionicons name="checkmark" size={20} color="#00D2BE" />
             </View>
-            
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonLabel}>Notifications</Text>
               <Ionicons name="close" size={20} color="#666" />
@@ -284,7 +253,6 @@ export default function PremiumScreen() {
             </View>
           </View>
         </View>
-
         {/* Demo Notice */}
         <View style={styles.demoNotice}>
           <Ionicons name="information-circle" size={20} color="#FF8700" />
@@ -296,7 +264,6 @@ export default function PremiumScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -326,7 +293,6 @@ const styles = StyleSheet.create({
   statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
     marginBottom: 8,
   },
   statusTitle: {
@@ -393,12 +359,10 @@ const styles = StyleSheet.create({
   },
   featuresList: {
     marginBottom: 20,
-    gap: 10,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
   featureText: {
     fontSize: 15,
@@ -411,7 +375,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
   subscribeButtonText: {
     fontSize: 16,
@@ -447,7 +410,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
     padding: 16,
-    gap: 12,
   },
   comparisonRow: {
     flexDirection: 'row',
@@ -465,7 +427,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#2a1a0a',
     borderRadius: 12,
-    gap: 12,
     alignItems: 'center',
   },
   demoText: {
