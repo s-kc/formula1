@@ -442,7 +442,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#E10600',
-    letterSpacing: 1.5,
     marginLeft: 8,
   },
   raceName: {
@@ -504,7 +503,6 @@ const styles = StyleSheet.create({
     color: '#999',
     marginBottom: 12,
     marginTop: 4,
-    letterSpacing: 1,
   },
   standingRow: {
     flexDirection: 'row',

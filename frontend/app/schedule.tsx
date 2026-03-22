@@ -271,7 +271,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#E10600',
-    letterSpacing: 2,
   },
   nextRaceName: {
     fontSize: 24,
