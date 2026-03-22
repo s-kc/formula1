@@ -52,6 +52,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="premium"
+          options={{
+            title: 'Go Premium',
+          }}
+        />
+        <Stack.Screen
           name="driver/[id]"
           options={{
             title: 'Driver Details',
