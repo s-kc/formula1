@@ -413,13 +413,13 @@ const styles = StyleSheet.create({
   headerTitle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     marginBottom: 8,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
+    marginLeft: 12,
   },
   subtitle: {
     fontSize: 16,
@@ -436,7 +436,6 @@ const styles = StyleSheet.create({
   raceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     marginBottom: 12,
   },
   raceLabel: {
@@ -444,6 +443,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#E10600',
     letterSpacing: 1.5,
+    marginLeft: 8,
   },
   raceName: {
     fontSize: 22,
@@ -464,7 +464,6 @@ const styles = StyleSheet.create({
   countdownContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
     backgroundColor: '#15151E',
     padding: 12,
     borderRadius: 10,
@@ -473,6 +472,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#00D2BE',
+    marginLeft: 10,
   },
   standingsSection: {
     backgroundColor: '#1a1a1a',
@@ -491,12 +491,12 @@ const styles = StyleSheet.create({
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
+    marginLeft: 10,
   },
   subsectionTitle: {
     fontSize: 14,
@@ -504,7 +504,6 @@ const styles = StyleSheet.create({
     color: '#999',
     marginBottom: 12,
     marginTop: 4,
-    textTransform: 'uppercase',
     letterSpacing: 1,
   },
   standingRow: {
@@ -514,12 +513,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
-    gap: 10,
   },
   standingPosition: {
     width: 32,
     alignItems: 'center',
-    gap: 2,
+    marginRight: 10,
   },
   positionText: {
     fontSize: 16,
@@ -530,9 +528,11 @@ const styles = StyleSheet.create({
     width: 3,
     height: 36,
     borderRadius: 2,
+    marginLeft: 10,
   },
   standingInfo: {
     flex: 1,
+    marginLeft: 10,
   },
   driverNameSmall: {
     fontSize: 15,
@@ -559,8 +559,8 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
     marginBottom: 24,
+    marginHorizontal: -8,
   },
   card: {
     flex: 1,
@@ -571,6 +571,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2a2a2a',
+    margin: 8,
   },
   premiumCard: {
     borderWidth: 2,
