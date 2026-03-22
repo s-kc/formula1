@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
   },
   driverInfo: {
     flex: 1,
+    marginLeft: 12,
   },
   driverName: {
     fontSize: 16,
@@ -214,9 +215,11 @@ const styles = StyleSheet.create({
   nationalityRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 4,
   },
   flag: {
     fontSize: 18,
+    marginRight: 6,
   },
   nationality: {
     fontSize: 14,

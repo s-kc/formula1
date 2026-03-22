@@ -306,6 +306,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
+    marginRight: 8,
   },
   roundText: {
     color: 'white',
@@ -337,6 +338,7 @@ const styles = StyleSheet.create({
   circuitName: {
     fontSize: 14,
     color: '#ccc',
+    marginLeft: 4,
   },
   location: {
     fontSize: 14,
@@ -356,6 +358,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#E10600',
     fontWeight: '600',
+    marginLeft: 6,
   },
   countdownBadge: {
     flexDirection: 'row',
@@ -369,6 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#00D2BE',
     fontWeight: '600',
+    marginLeft: 4,
   },
   weekendSchedule: {
     flexDirection: 'row',
@@ -379,6 +383,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
+    marginRight: 8,
   },
   sessionText: {
     color: '#999',

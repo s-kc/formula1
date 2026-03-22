@@ -324,17 +324,6 @@ export default function HomeScreen() {
 
         {/* Quick Actions Grid */}
         <View style={styles.grid}>
-          {/* Premium CTA - Featured */}
-          <Link href="/premium" asChild>
-            <TouchableOpacity style={[styles.card, styles.premiumCard]}>
-              <View style={[styles.iconContainer, { backgroundColor: '#FFD700' }]}>
-                <Ionicons name="diamond" size={32} color="#0c0c0c" />
-              </View>
-              <Text style={[styles.cardTitle, { color: '#FFD700' }]}>Go Premium</Text>
-              <Text style={styles.cardSubtitle}>Unlock all features</Text>
-            </TouchableOpacity>
-          </Link>
-
           <Link href="/schedule" asChild>
             <TouchableOpacity style={styles.card}>
               <View style={[styles.iconContainer, { backgroundColor: '#15151E' }]}>
