@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-interface Constructor {
-  constructorId: string;
-  name: string;
-  nationality: string;
-  url?: string;
+interface ConstructorStanding {
+  position: string;
+  positionText: string;
+  points: string;
+  wins: string;
+  Constructor: {
+    constructorId: string;
+    name: string;
+    nationality: string;
+  };
 }
 
 const TEAM_COLORS: { [key: string]: string } = {
@@ -29,40 +33,28 @@ const TEAM_COLORS: { [key: string]: string } = {
   haas: '#FFFFFF',
 };
 
-const COUNTRY_FLAGS: { [key: string]: string } = {
-  British: '🇬🇧',
-  Italian: '🇮🇹',
-  German: '🇩🇪',
-  Austrian: '🇦🇹',
-  French: '🇫🇷',
-  American: '🇺🇸',
-  Swiss: '🇨🇭',
-};
-
 function getTeamColor(constructorId: string): string {
   return TEAM_COLORS[constructorId] || '#999999';
 }
 
-function getFlagForNationality(nationality: string): string {
-  return COUNTRY_FLAGS[nationality.replace(' ', '_')] || '🏁';
-}
-
 export default function TeamsScreen() {
-  const [teams, setTeams] = useState<Constructor[]>([]);
+  const [constructorStandings, setConstructorStandings] = useState<ConstructorStanding[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchTeams = async () => {
+  const fetchStandings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/constructors`);
+      
+      const response = await fetch(`${BACKEND_URL}/api/standings/constructors`);
       const data = await response.json();
       
-      if (data?.MRData?.ConstructorTable?.Constructors) {
-        setTeams(data.MRData.ConstructorTable.Constructors);
+      if (data?.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings) {
+        setConstructorStandings(data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings);
       }
+      
     } catch (error) {
-      console.error('Error fetching teams:', error);
+      console.error('Error fetching constructor standings:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,12 +62,12 @@ export default function TeamsScreen() {
   };
 
   useEffect(() => {
-    fetchTeams();
+    fetchStandings();
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchTeams();
+    fetchStandings();
   };
 
   if (loading) {
@@ -83,7 +75,7 @@ export default function TeamsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#E10600" />
-          <Text style={styles.loadingText}>Loading teams...</Text>
+          <Text style={styles.loadingText}>Loading constructor standings...</Text>
         </View>
       </SafeAreaView>
     );
@@ -97,35 +89,43 @@ export default function TeamsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
         }
       >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>2025 F1 Teams</Text>
-          <Text style={styles.headerSubtitle}>{teams.length} constructors competing</Text>
-        </View>
-
-        <View style={styles.teamsContainer}>
-          {teams.map((team) => (
-            <Link key={team.constructorId} href={`/team/${team.constructorId}`} asChild>
-              <TouchableOpacity style={styles.teamCard}>
-                <View
-                  style={[
-                    styles.colorStripe,
-                    { backgroundColor: getTeamColor(team.constructorId) },
-                  ]}
-                />
-                
-                <View style={styles.teamContent}>
-                  <View style={styles.teamInfo}>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <View style={styles.nationalityRow}>
-                      <Text style={styles.flag}>{getFlagForNationality(team.nationality)}</Text>
-                      <Text style={styles.nationality}>{team.nationality}</Text>
-                    </View>
-                  </View>
-
-                  <Ionicons name="chevron-forward" size={24} color="#999" />
+        <View style={styles.standingsContainer}>
+          {constructorStandings.map((standing, index) => (
+            <View key={standing.Constructor.constructorId} style={styles.standingCard}>
+              <View style={styles.positionSection}>
+                <Text style={styles.position}>{standing.position}</Text>
+                {index < 3 && (
+                  <Ionicons
+                    name="trophy"
+                    size={16}
+                    color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
+                  />
+                )}
+              </View>
+              
+              <View
+                style={[
+                  styles.colorBar,
+                  { backgroundColor: getTeamColor(standing.Constructor.constructorId) },
+                ]}
+              />
+              
+              <View style={styles.teamInfo}>
+                <Text style={styles.teamName}>{standing.Constructor.name}</Text>
+                <Text style={styles.nationality}>{standing.Constructor.nationality}</Text>
+              </View>
+              
+              <View style={styles.statsSection}>
+                <View style={styles.stat}>
+                  <Text style={styles.statValue}>{standing.points}</Text>
+                  <Text style={styles.statLabel}>PTS</Text>
                 </View>
-              </TouchableOpacity>
-            </Link>
+                <View style={styles.stat}>
+                  <Text style={styles.statValue}>{standing.wins}</Text>
+                  <Text style={styles.statLabel}>WINS</Text>
+                </View>
+              </View>
+            </View>
           ))}
         </View>
       </ScrollView>
@@ -151,44 +151,38 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  header: {
+  standingsContainer: {
     padding: 16,
-    paddingBottom: 8,
   },
-  headerTitle: {
-    fontSize: 24,
+  standingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  positionSection: {
+    width: 40,
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  position: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 4,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#999',
-  },
-  teamsContainer: {
-    padding: 16,
-  },
-  teamCard: {
-    flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-    marginBottom: 12,
-  },
-  colorStripe: {
-    width: 6,
-  },
-  teamContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+  colorBar: {
+    width: 4,
+    height: 50,
+    borderRadius: 2,
+    marginRight: 12,
   },
   teamInfo: {
     flex: 1,
-    marginRight: 12,
   },
   teamName: {
     fontSize: 18,
@@ -196,16 +190,26 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 6,
   },
-  nationalityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flag: {
-    fontSize: 18,
-    marginRight: 6,
-  },
   nationality: {
     fontSize: 14,
     color: '#999',
+  },
+  statsSection: {
+    flexDirection: 'row',
+    marginLeft: 16,
+  },
+  stat: {
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#E10600',
+  },
+  statLabel: {
+    fontSize: 10,
+    color: '#999',
+    marginTop: 2,
   },
 });
