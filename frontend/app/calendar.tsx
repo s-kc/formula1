@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
 interface Race {
   season: string;
   round: string;
@@ -23,6 +25,40 @@ interface Race {
   Qualifying?: { date: string; time: string };
   Sprint?: { date: string; time: string };
 }
+
+// Country flag mapping
+function getCountryFlag(country: string): string {
+  const flagMap: { [key: string]: string } = {
+    'Bahrain': '🇧🇭',
+    'Saudi Arabia': '🇸🇦',
+    'Australia': '🇦🇺',
+    'Japan': '🇯🇵',
+    'China': '🇨🇳',
+    'USA': '🇺🇸',
+    'United States': '🇺🇸',
+    'Italy': '🇮🇹',
+    'Monaco': '🇲🇨',
+    'Canada': '🇨🇦',
+    'Spain': '🇪🇸',
+    'Austria': '🇦🇹',
+    'UK': '🇬🇧',
+    'United Kingdom': '🇬🇧',
+    'Hungary': '🇭🇺',
+    'Belgium': '🇧🇪',
+    'Netherlands': '🇳🇱',
+    'Singapore': '🇸🇬',
+    'Azerbaijan': '🇦🇿',
+    'Mexico': '🇲🇽',
+    'Brazil': '🇧🇷',
+    'Qatar': '🇶🇦',
+    'UAE': '🇦🇪',
+    'Abu Dhabi': '🇦🇪',
+    'Las Vegas': '🇺🇸',
+    'Miami': '🇺🇸',
+  };
+  return flagMap[country] || '🏁';
+}
+
 function getCountdown(raceDate: string, raceTime?: string): string {
   const dateTimeString = raceTime ? `${raceDate}T${raceTime}` : `${raceDate}T14:00:00Z`;
   const raceDateTime = new Date(dateTimeString);
@@ -36,90 +72,6 @@ function getCountdown(raceDate: string, raceTime?: string): string {
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   if (days > 0) {
     return `${days}d ${hours}h`;
-  } else if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  } else {
-    return `${minutes}m`;
-  }
-}
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
-interface Race {
-  season: string;
-  round: string;
-  raceName: string;
-  date: string;
-  time?: string;
-  Circuit: {
-    circuitId: string;
-    circuitName: string;
-    Location: {
-      locality: string;
-      country: string;
-    };
-  };
-  FirstPractice?: { date: string; time: string };
-  SecondPractice?: { date: string; time: string };
-  ThirdPractice?: { date: string; time: string };
-  Qualifying?: { date: string; time: string };
-  Sprint?: { date: string; time: string };
-}
-
-const COUNTRY_FLAGS: { [key: string]: string } = {
-  Bahrain: '🇧🇭',
-  'Saudi Arabia': '🇸🇦',
-  Australia: '🇦🇺',
-  Japan: '🇯🇵',
-  China: '🇨🇳',
-  USA: '🇺🇸',
-  Italy: '🇮🇹',
-  Monaco: '🇲🇨',
-  Canada: '🇨🇦',
-  Spain: '🇪🇸',
-  Austria: '🇦🇹',
-  UK: '🇬🇧',
-  Hungary: '🇭🇺',
-  Belgium: '🇧🇪',
-  Netherlands: '🇳🇱',
-  Azerbaijan: '🇦🇿',
-  Singapore: '🇸🇬',
-  Mexico: '🇲🇽',
-  Brazil: '🇧🇷',
-  Qatar: '🇶🇦',
-  'United States': '🇺🇸',
-  'United Arab Emirates': '🇦🇪',
-  UAE: '🇦🇪',
-};
-
-function getCountryFlag(country: string): string {
-  return COUNTRY_FLAGS[country] || '🏁';
-}
-
-function getCountdown(raceDate: string, raceTime?: string): string {
-  const dateTimeString = raceTime ? `${raceDate}T${raceTime}` : `${raceDate}T14:00:00Z`;
-  const raceDateTime = new Date(dateTimeString);
-  const now = new Date();
-  const diff = raceDateTime.getTime() - now.getTime();
-
-  if (diff < 0) {
-    return 'Completed';
-  }
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-  if (days > 0) {
-    return `${days}d ${hours}h ${minutes}m`;
   } else if (hours > 0) {
     return `${hours}h ${minutes}m`;
   } else {
@@ -192,9 +144,9 @@ export default function CalendarScreen() {
       return races.filter((race) => {
         const raceDateTime = new Date(race.time ? `${race.date}T${race.time}` : `${race.date}T14:00:00Z`);
         return raceDateTime <= now;
-      }).reverse(); // Show most recent first
+      }).reverse();
     }
-    return races; // 'all' - show all races
+    return races;
   };
 
   const filteredRaces = getFilteredRaces();
@@ -342,168 +294,7 @@ export default function CalendarScreen() {
     </SafeAreaView>
   );
 }
-  const [races, setRaces] = useState<Race[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [countdown, setCountdown] = useState<{ [key: string]: string }>({});
-  const fetchSchedule = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/schedule`);
-      const data = await response.json();
-      if (data?.MRData?.RaceTable?.Races) {
-        setRaces(data.MRData.RaceTable.Races);
-      }
-    } catch (error) {
-      console.error('Error fetching schedule:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-  useEffect(() => {
-    fetchSchedule();
-  }, []);
-  // Update countdowns every minute
-  useEffect(() => {
-    const updateCountdowns = () => {
-      const newCountdowns: { [key: string]: string } = {};
-      races.forEach((race) => {
-        newCountdowns[race.round] = getCountdown(race.date, race.time);
-      });
-      setCountdown(newCountdowns);
-    };
-    updateCountdowns();
-    const interval = setInterval(updateCountdowns, 60000); // Update every minute
-    return () => clearInterval(interval);
-  }, [races]);
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchSchedule();
-  };
-  // Find next race
-  const getNextRace = () => {
-    const now = new Date();
-    return races.find((race) => {
-      const raceDateTime = new Date(race.time ? `${race.date}T${race.time}` : `${race.date}T14:00:00Z`);
-      return raceDateTime > now;
-    });
-  };
-  const nextRace = getNextRace();
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E10600" />
-          <Text style={styles.loadingText}>Loading schedule...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-  return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
-        }
-      >
-        {/* Next Race Highlight */}
-        {nextRace && (
-          <View style={styles.nextRaceCard}>
-            <View style={styles.nextRaceHeader}>
-              <Ionicons name="flag" size={24} color="#E10600" />
-              <Text style={styles.nextRaceLabel}>NEXT RACE</Text>
-            </View>
-            <Text style={styles.nextRaceName}>{nextRace.raceName}</Text>
-            <Text style={styles.nextRaceLocation}>
-              {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
-            </Text>
-            <View style={styles.countdownContainer}>
-              <Ionicons name="time" size={32} color="#00D2BE" />
-              <Text style={styles.countdownText}>{countdown[nextRace.round]}</Text>
-            </View>
-            <Text style={styles.raceDate}>
-              {new Date(nextRace.date).toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </Text>
-          </View>
-        )}
-        {/* Full Schedule */}
-        <View style={styles.scheduleContainer}>
-          <Text style={styles.sectionTitle}>Full Season Calendar</Text>
-          {races.map((race) => {
-            const isNextRace = nextRace?.round === race.round;
-            const isCompleted = countdown[race.round] === 'Completed';
-            return (
-              <TouchableOpacity
-                key={race.round}
-                style={[
-                  styles.raceCard,
-                  isNextRace && styles.nextRaceHighlight,
-                  isCompleted && styles.completedRace,
-                ]}
-              >
-                <View style={styles.raceHeader}>
-                  <View style={styles.roundBadge}>
-                    <Text style={styles.roundText}>R{race.round}</Text>
-                  </View>
-                  {isNextRace && (
-                    <View style={styles.nextBadge}>
-                      <Text style={styles.nextBadgeText}>NEXT</Text>
-                    </View>
-                  )}
-                  {isCompleted && (
-                    <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
-                  )}
-                </View>
-                <Text style={styles.raceName}>{race.raceName}</Text>
-                <View style={styles.locationRow}>
-                  <Ionicons name="location" size={14} color="#999" />
-                  <Text style={styles.circuitName}>{race.Circuit.circuitName}</Text>
-                </View>
-                <Text style={styles.location}>
-                  {race.Circuit.Location.locality}, {race.Circuit.Location.country}
-                </Text>
-                <View style={styles.dateRow}>
-                  <View style={styles.dateInfo}>
-                    <Ionicons name="calendar" size={14} color="#E10600" />
-                    <Text style={styles.dateText}>{formatDate(race.date)}</Text>
-                  </View>
-                  {!isCompleted && countdown[race.round] && (
-                    <View style={styles.countdownBadge}>
-                      <Ionicons name="timer" size={12} color="#00D2BE" />
-                      <Text style={styles.countdownSmall}>{countdown[race.round]}</Text>
-                    </View>
-                  )}
-                </View>
-                {/* Weekend Schedule */}
-                {(race.Sprint || race.Qualifying) && (
-                  <View style={styles.weekendSchedule}>
-                    {race.Sprint && (
-                      <View style={styles.sessionBadge}>
-                        <Text style={styles.sessionText}>Sprint</Text>
-                      </View>
-                    )}
-                    {race.Qualifying && (
-                      <View style={styles.sessionBadge}>
-                        <Text style={styles.sessionText}>Qualifying</Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -522,59 +313,38 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  nextRaceCard: {
-    margin: 16,
-    padding: 24,
+  tabContainer: {
+    flexDirection: 'row',
     backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#E10600',
-    alignItems: 'center',
-  },
-  nextRaceHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  nextRaceLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#E10600',
-  },
-  nextRaceName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
     marginBottom: 8,
+    borderRadius: 12,
+    padding: 4,
   },
-  nextRaceLocation: {
-    fontSize: 16,
-    color: '#999',
-    marginBottom: 20,
-  },
-  countdownContainer: {
+  tab: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 10,
   },
-  countdownText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#00D2BE',
+  activeTab: {
+    backgroundColor: '#2a2a2a',
   },
-  raceDate: {
-    fontSize: 14,
+  tabText: {
     color: '#999',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  activeTabText: {
+    color: '#E10600',
   },
   scheduleContainer: {
     padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 16,
   },
   raceCard: {
     backgroundColor: '#1a1a1a',
@@ -584,17 +354,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2a2a2a',
   },
-  nextRaceHighlight: {
-    borderColor: '#E10600',
-    borderWidth: 2,
-  },
   completedRace: {
     opacity: 0.6,
   },
   raceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  raceHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   roundBadge: {
     backgroundColor: '#2a2a2a',
@@ -608,22 +379,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  nextBadge: {
-    backgroundColor: '#E10600',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+  raceMainContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
-  nextBadgeText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
+  raceFlag: {
+    fontSize: 40,
+    marginRight: 16,
+  },
+  raceDetails: {
+    flex: 1,
   },
   raceName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   locationRow: {
     flexDirection: 'row',
