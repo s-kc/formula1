@@ -47,7 +47,13 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   UAE: '🇦🇪',
 };
 
-interface SessionWinner {
+const PODIUM_COLORS = {
+  1: '#FFD700', // Gold
+  2: '#C0C0C0', // Silver
+  3: '#CD7F32', // Bronze
+};
+
+interface SessionResult {
   position: string;
   Driver: {
     driverId: string;
@@ -73,13 +79,17 @@ function getCountryFlag(country: string): string {
   return COUNTRY_FLAGS[country] || '🏁';
 }
 
+function getPodiumColor(position: number): string {
+  return PODIUM_COLORS[position as keyof typeof PODIUM_COLORS] || '#999';
+}
+
 export default function ResultsScreen() {
   const [completedRaces, setCompletedRaces] = useState<any[]>([]);
   const [selectedRace, setSelectedRace] = useState<any>(null);
   const [raceResults, setRaceResults] = useState<any[]>([]);
-  const [qualifyingWinner, setQualifyingWinner] = useState<SessionWinner | null>(null);
-  const [sprintWinner, setSprintWinner] = useState<SessionWinner | null>(null);
-  const [raceWinner, setRaceWinner] = useState<SessionWinner | null>(null);
+  const [qualifyingTop3, setQualifyingTop3] = useState<SessionResult[]>([]);
+  const [sprintTop3, setSprintTop3] = useState<SessionResult[]>([]);
+  const [raceTop3, setRaceTop3] = useState<SessionResult[]>([]);
   const [hasSprint, setHasSprint] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingResults, setLoadingResults] = useState(false);
@@ -133,38 +143,40 @@ export default function ResultsScreen() {
         raceHasSprint ? fetch(`${BACKEND_URL}/api/race/${race.round}/sprint`) : Promise.resolve(null)
       ]);
       
-      // Parse race results
+      // Parse race results - get top 3
       const raceData = await raceResponse.json();
       if (raceData?.MRData?.RaceTable?.Races?.[0]?.Results) {
         const results = raceData.MRData.RaceTable.Races[0].Results;
         setRaceResults(results);
-        // Get race winner (P1)
-        const winner = results.find((r: any) => r.position === '1');
-        setRaceWinner(winner || null);
+        // Get top 3
+        const top3 = results.filter((r: any) => ['1', '2', '3'].includes(r.position));
+        setRaceTop3(top3);
+      } else {
+        setRaceTop3([]);
       }
       
-      // Parse qualifying results
+      // Parse qualifying results - get top 3
       const qualifyingData = await qualifyingResponse.json();
       if (qualifyingData?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults) {
         const qualResults = qualifyingData.MRData.RaceTable.Races[0].QualifyingResults;
-        const poleWinner = qualResults.find((r: any) => r.position === '1');
-        setQualifyingWinner(poleWinner || null);
+        const top3 = qualResults.filter((r: any) => ['1', '2', '3'].includes(r.position));
+        setQualifyingTop3(top3);
       } else {
-        setQualifyingWinner(null);
+        setQualifyingTop3([]);
       }
       
-      // Parse sprint results if available
+      // Parse sprint results - get top 3 if available
       if (sprintResponse) {
         const sprintData = await sprintResponse.json();
         if (sprintData?.MRData?.RaceTable?.Races?.[0]?.SprintResults) {
           const sprintResults = sprintData.MRData.RaceTable.Races[0].SprintResults;
-          const sprintWinnerResult = sprintResults.find((r: any) => r.position === '1');
-          setSprintWinner(sprintWinnerResult || null);
+          const top3 = sprintResults.filter((r: any) => ['1', '2', '3'].includes(r.position));
+          setSprintTop3(top3);
         } else {
-          setSprintWinner(null);
+          setSprintTop3([]);
         }
       } else {
-        setSprintWinner(null);
+        setSprintTop3([]);
       }
       
     } catch (error) {
@@ -178,66 +190,86 @@ export default function ResultsScreen() {
     setRefreshing(true);
     setSelectedRace(null);
     setRaceResults([]);
-    setQualifyingWinner(null);
-    setSprintWinner(null);
-    setRaceWinner(null);
+    setQualifyingTop3([]);
+    setSprintTop3([]);
+    setRaceTop3([]);
     fetchCompletedRaces();
   };
 
   const handleBackToRaces = () => {
     setSelectedRace(null);
     setRaceResults([]);
-    setQualifyingWinner(null);
-    setSprintWinner(null);
-    setRaceWinner(null);
+    setQualifyingTop3([]);
+    setSprintTop3([]);
+    setRaceTop3([]);
     setActiveResultsTab('winners');
   };
 
-  const renderWinnerCard = (
+  const renderPodiumCard = (
     title: string, 
-    winner: SessionWinner | null, 
+    top3: SessionResult[], 
     icon: string, 
     iconColor: string,
-    timeLabel: string,
-    timeValue?: string
+    getTimeValue: (result: SessionResult) => string | undefined
   ) => {
-    if (!winner) return null;
+    if (top3.length === 0) return null;
     
     return (
-      <View style={styles.winnerCard}>
-        <View style={styles.winnerHeader}>
-          <View style={styles.winnerIconContainer}>
+      <View style={styles.podiumCard}>
+        <View style={styles.podiumHeader}>
+          <View style={[styles.podiumIconContainer, { backgroundColor: iconColor + '20' }]}>
             <Ionicons name={icon as any} size={24} color={iconColor} />
           </View>
-          <Text style={styles.winnerTitle}>{title}</Text>
+          <Text style={styles.podiumTitle}>{title}</Text>
         </View>
         
-        <View style={styles.winnerContent}>
-          <View
-            style={[
-              styles.winnerColorBar,
-              { backgroundColor: getTeamColor(winner.Constructor?.constructorId) },
-            ]}
-          />
-          
-          <View style={styles.winnerInfo}>
-            <View style={styles.winnerNameRow}>
-              <Ionicons name="trophy" size={18} color="#FFD700" />
-              <Text style={styles.winnerName}>
-                {winner.Driver.givenName} {winner.Driver.familyName}
-              </Text>
-              {winner.Driver.code && (
-                <Text style={styles.driverCode}>{winner.Driver.code}</Text>
-              )}
-            </View>
-            <Text style={styles.winnerTeam}>{winner.Constructor?.name}</Text>
-            {timeValue && (
-              <View style={styles.timeRow}>
-                <Text style={styles.timeLabel}>{timeLabel}:</Text>
-                <Text style={styles.timeValue}>{timeValue}</Text>
+        <View style={styles.podiumContent}>
+          {top3.map((result, index) => {
+            const position = parseInt(result.position);
+            const timeValue = getTimeValue(result);
+            
+            return (
+              <View key={result.position} style={styles.podiumRow}>
+                <View style={styles.podiumPosition}>
+                  <View style={[styles.positionBadge, { backgroundColor: getPodiumColor(position) + '30' }]}>
+                    <Ionicons 
+                      name="trophy" 
+                      size={16} 
+                      color={getPodiumColor(position)} 
+                    />
+                    <Text style={[styles.positionText, { color: getPodiumColor(position) }]}>
+                      P{result.position}
+                    </Text>
+                  </View>
+                </View>
+                
+                <View
+                  style={[
+                    styles.podiumColorBar,
+                    { backgroundColor: getTeamColor(result.Constructor?.constructorId) },
+                  ]}
+                />
+                
+                <View style={styles.podiumDriverInfo}>
+                  <View style={styles.podiumNameRow}>
+                    <Text style={styles.podiumDriverName}>
+                      {result.Driver.givenName} {result.Driver.familyName}
+                    </Text>
+                    {result.Driver.code && (
+                      <Text style={styles.driverCode}>{result.Driver.code}</Text>
+                    )}
+                  </View>
+                  <Text style={styles.podiumTeam}>{result.Constructor?.name}</Text>
+                </View>
+                
+                {timeValue && (
+                  <View style={styles.podiumTimeContainer}>
+                    <Text style={styles.podiumTime}>{timeValue}</Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
+            );
+          })}
         </View>
       </View>
     );
@@ -350,7 +382,7 @@ export default function ResultsScreen() {
                   color={activeResultsTab === 'winners' ? '#E10600' : '#999'}
                 />
                 <Text style={[styles.tabText, activeResultsTab === 'winners' && styles.activeTabText]}>
-                  Winners
+                  Podium
                 </Text>
               </TouchableOpacity>
               
@@ -376,40 +408,37 @@ export default function ResultsScreen() {
                 <Text style={styles.loadingText}>Loading session data...</Text>
               </View>
             ) : activeResultsTab === 'winners' ? (
-              <View style={styles.winnersContainer}>
-                <Text style={styles.sectionTitle}>Session Winners</Text>
+              <View style={styles.podiumContainer}>
+                <Text style={styles.sectionTitle}>Session Podiums</Text>
                 
-                {/* Qualifying Winner */}
-                {renderWinnerCard(
-                  'Qualifying - Pole Position',
-                  qualifyingWinner,
+                {/* Qualifying Top 3 */}
+                {renderPodiumCard(
+                  'Qualifying',
+                  qualifyingTop3,
                   'stopwatch',
                   '#9B59B6',
-                  'Best Time',
-                  qualifyingWinner?.Q3 || qualifyingWinner?.Q2 || qualifyingWinner?.Q1
+                  (result) => result.Q3 || result.Q2 || result.Q1
                 )}
                 
-                {/* Sprint Winner (only if sprint weekend) */}
-                {hasSprint && renderWinnerCard(
-                  'Sprint Race Winner',
-                  sprintWinner,
+                {/* Sprint Top 3 (only if sprint weekend) */}
+                {hasSprint && renderPodiumCard(
+                  'Sprint Race',
+                  sprintTop3,
                   'flash',
                   '#F39C12',
-                  'Time',
-                  sprintWinner?.Time?.time
+                  (result) => result.Time?.time
                 )}
                 
-                {/* Race Winner */}
-                {renderWinnerCard(
-                  'Grand Prix Winner',
-                  raceWinner,
+                {/* Race Top 3 */}
+                {renderPodiumCard(
+                  'Grand Prix',
+                  raceTop3,
                   'flag',
                   '#E10600',
-                  'Time',
-                  raceWinner?.Time?.time
+                  (result) => result.Time?.time
                 )}
                 
-                {!qualifyingWinner && !sprintWinner && !raceWinner && (
+                {qualifyingTop3.length === 0 && sprintTop3.length === 0 && raceTop3.length === 0 && (
                   <View style={styles.noDataContainer}>
                     <Ionicons name="information-circle" size={48} color="#666" />
                     <Text style={styles.noDataText}>No session data available yet</Text>
@@ -652,81 +681,97 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#E10600',
   },
-  winnersContainer: {
+  podiumContainer: {
     padding: 16,
   },
-  winnerCard: {
+  podiumCard: {
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
-    padding: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#2a2a2a',
+    overflow: 'hidden',
   },
-  winnerHeader: {
+  podiumHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
+    padding: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#2a2a2a',
   },
-  winnerIconContainer: {
+  podiumIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#2a2a2a',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  winnerTitle: {
+  podiumTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
     flex: 1,
   },
-  winnerContent: {
+  podiumContent: {
+    padding: 4,
+  },
+  podiumRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
   },
-  winnerColorBar: {
+  podiumPosition: {
+    marginRight: 10,
+  },
+  positionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  positionText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginLeft: 4,
+  },
+  podiumColorBar: {
     width: 4,
-    height: 60,
+    height: 40,
     borderRadius: 2,
-    marginRight: 14,
+    marginRight: 12,
   },
-  winnerInfo: {
+  podiumDriverInfo: {
     flex: 1,
   },
-  winnerNameRow: {
+  podiumNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    flexWrap: 'wrap',
+    marginBottom: 2,
   },
-  winnerName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  podiumDriverName: {
+    fontSize: 15,
+    fontWeight: '600',
     color: 'white',
-    marginLeft: 8,
     marginRight: 8,
   },
-  winnerTeam: {
-    fontSize: 14,
-    color: '#999',
-    marginBottom: 8,
+  podiumTeam: {
+    fontSize: 12,
+    color: '#888',
   },
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  podiumTimeContainer: {
+    backgroundColor: '#0a1a1a',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
-  timeLabel: {
-    fontSize: 13,
-    color: '#666',
-    marginRight: 6,
-  },
-  timeValue: {
-    fontSize: 14,
+  podiumTime: {
+    fontSize: 12,
     color: '#00D2BE',
     fontWeight: '600',
   },
