@@ -57,10 +57,8 @@ function getTeamColor(constructorId: string): string {
   return TEAM_COLORS[constructorId] || '#999999';
 }
 
-export default function StandingsScreen() {
-  const [activeTab, setActiveTab] = useState<'drivers' | 'constructors'>('drivers');
+export default function RidersScreen() {
   const [driverStandings, setDriverStandings] = useState<DriverStanding[]>([]);
-  const [constructorStandings, setConstructorStandings] = useState<ConstructorStanding[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -74,14 +72,6 @@ export default function StandingsScreen() {
       
       if (driverData?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings) {
         setDriverStandings(driverData.MRData.StandingsTable.StandingsLists[0].DriverStandings);
-      }
-      
-      // Fetch constructor standings
-      const constructorResponse = await fetch(`${BACKEND_URL}/api/standings/constructors`);
-      const constructorData = await constructorResponse.json();
-      
-      if (constructorData?.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings) {
-        setConstructorStandings(constructorData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings);
       }
       
     } catch (error) {
@@ -114,131 +104,58 @@ export default function StandingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      {/* Tab Switcher */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'drivers' && styles.activeTab]}
-          onPress={() => setActiveTab('drivers')}
-        >
-          <Ionicons
-            name="person"
-            size={20}
-            color={activeTab === 'drivers' ? '#E10600' : '#999'}
-          />
-          <Text style={[styles.tabText, activeTab === 'drivers' && styles.activeTabText]}>
-            Drivers
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'constructors' && styles.activeTab]}
-          onPress={() => setActiveTab('constructors')}
-        >
-          <Ionicons
-            name="people"
-            size={20}
-            color={activeTab === 'constructors' ? '#E10600' : '#999'}
-          />
-          <Text style={[styles.tabText, activeTab === 'constructors' && styles.activeTabText]}>
-            Constructors
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
         }
       >
-        {activeTab === 'drivers' ? (
-          <View style={styles.standingsContainer}>
-            {driverStandings.map((standing, index) => (
-              <View key={standing.Driver.driverId} style={styles.standingCard}>
-                <View style={styles.positionSection}>
-                  <Text style={styles.position}>{standing.position}</Text>
-                  {index < 3 && (
-                    <Ionicons
-                      name="trophy"
-                      size={16}
-                      color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
-                    />
+        <View style={styles.standingsContainer}>
+          {driverStandings.map((standing, index) => (
+            <View key={standing.Driver.driverId} style={styles.standingCard}>
+              <View style={styles.positionSection}>
+                <Text style={styles.position}>{standing.position}</Text>
+                {index < 3 && (
+                  <Ionicons
+                    name="trophy"
+                    size={16}
+                    color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
+                  />
+                )}
+              </View>
+              
+              <View
+                style={[
+                  styles.colorBar,
+                  { backgroundColor: getTeamColor(standing.Constructors[0]?.constructorId) },
+                ]}
+              />
+              
+              <View style={styles.driverInfo}>
+                <View style={styles.driverNameSection}>
+                  <Text style={styles.driverName}>
+                    {standing.Driver.givenName} {standing.Driver.familyName}
+                  </Text>
+                  {standing.Driver.code && (
+                    <Text style={styles.driverCode}>{standing.Driver.code}</Text>
                   )}
                 </View>
-                
-                <View
-                  style={[
-                    styles.colorBar,
-                    { backgroundColor: getTeamColor(standing.Constructors[0]?.constructorId) },
-                  ]}
-                />
-                
-                <View style={styles.driverInfo}>
-                  <View style={styles.driverNameSection}>
-                    <Text style={styles.driverName}>
-                      {standing.Driver.givenName} {standing.Driver.familyName}
-                    </Text>
-                    {standing.Driver.code && (
-                      <Text style={styles.driverCode}>{standing.Driver.code}</Text>
-                    )}
-                  </View>
-                  <Text style={styles.teamName}>{standing.Constructors[0]?.name}</Text>
+                <Text style={styles.teamName}>{standing.Constructors[0]?.name}</Text>
+              </View>
+              
+              <View style={styles.statsSection}>
+                <View style={styles.stat}>
+                  <Text style={styles.statValue}>{standing.points}</Text>
+                  <Text style={styles.statLabel}>PTS</Text>
                 </View>
-                
-                <View style={styles.statsSection}>
-                  <View style={styles.stat}>
-                    <Text style={styles.statValue}>{standing.points}</Text>
-                    <Text style={styles.statLabel}>PTS</Text>
-                  </View>
-                  <View style={styles.stat}>
-                    <Text style={styles.statValue}>{standing.wins}</Text>
-                    <Text style={styles.statLabel}>WINS</Text>
-                  </View>
+                <View style={styles.stat}>
+                  <Text style={styles.statValue}>{standing.wins}</Text>
+                  <Text style={styles.statLabel}>WINS</Text>
                 </View>
               </View>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.standingsContainer}>
-            {constructorStandings.map((standing, index) => (
-              <View key={standing.Constructor.constructorId} style={styles.standingCard}>
-                <View style={styles.positionSection}>
-                  <Text style={styles.position}>{standing.position}</Text>
-                  {index < 3 && (
-                    <Ionicons
-                      name="trophy"
-                      size={16}
-                      color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
-                    />
-                  )}
-                </View>
-                
-                <View
-                  style={[
-                    styles.colorBar,
-                    { backgroundColor: getTeamColor(standing.Constructor.constructorId) },
-                  ]}
-                />
-                
-                <View style={styles.driverInfo}>
-                  <Text style={styles.constructorName}>{standing.Constructor.name}</Text>
-                  <Text style={styles.nationality}>{standing.Constructor.nationality}</Text>
-                </View>
-                
-                <View style={styles.statsSection}>
-                  <View style={styles.stat}>
-                    <Text style={styles.statValue}>{standing.points}</Text>
-                    <Text style={styles.statLabel}>PTS</Text>
-                  </View>
-                  <View style={styles.stat}>
-                    <Text style={styles.statValue}>{standing.wins}</Text>
-                    <Text style={styles.statLabel}>WINS</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
