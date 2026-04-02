@@ -55,7 +55,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="riders"
         options={{
-          title: 'Riders',
+          title: 'Drivers',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
@@ -66,7 +66,7 @@ export default function TabLayout() {
         options={{
           title: 'Teams',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
+            <Ionicons name="build" size={size} color={color} />
           ),
         }}
       />

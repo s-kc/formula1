@@ -234,6 +234,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 50,
     borderRadius: 2,
+    marginRight: 12,
   },
   driverInfo: {
     flex: 1,
