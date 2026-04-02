@@ -89,7 +89,7 @@ export default function ResultsScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size=\"large\" color=\"#E10600\" />
+          <ActivityIndicator size="large" color="#E10600" />
           <Text style={styles.loadingText}>Loading results...</Text>
         </View>
       </SafeAreaView>
@@ -101,7 +101,7 @@ export default function ResultsScreen() {
       <ScrollView
         style={styles.scrollView}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor=\"#E10600\" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
         }
       >
         {selectedRace && (
@@ -129,7 +129,7 @@ export default function ResultsScreen() {
                 <Text style={styles.position}>{result.position}</Text>
                 {index < 3 && (
                   <Ionicons
-                    name=\"trophy\"
+                    name="trophy"
                     size={14}
                     color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
                   />
