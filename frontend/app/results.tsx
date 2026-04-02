@@ -47,6 +47,24 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   UAE: '🇦🇪',
 };
 
+interface SessionWinner {
+  position: string;
+  Driver: {
+    driverId: string;
+    givenName: string;
+    familyName: string;
+    code?: string;
+  };
+  Constructor: {
+    constructorId: string;
+    name: string;
+  };
+  Time?: { time: string };
+  Q1?: string;
+  Q2?: string;
+  Q3?: string;
+}
+
 function getTeamColor(constructorId: string): string {
   return TEAM_COLORS[constructorId] || '#999999';
 }
@@ -59,9 +77,14 @@ export default function ResultsScreen() {
   const [completedRaces, setCompletedRaces] = useState<any[]>([]);
   const [selectedRace, setSelectedRace] = useState<any>(null);
   const [raceResults, setRaceResults] = useState<any[]>([]);
+  const [qualifyingWinner, setQualifyingWinner] = useState<SessionWinner | null>(null);
+  const [sprintWinner, setSprintWinner] = useState<SessionWinner | null>(null);
+  const [raceWinner, setRaceWinner] = useState<SessionWinner | null>(null);
+  const [hasSprint, setHasSprint] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingResults, setLoadingResults] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeResultsTab, setActiveResultsTab] = useState<'winners' | 'full'>('winners');
 
   useEffect(() => {
     fetchCompletedRaces();
@@ -97,13 +120,53 @@ export default function ResultsScreen() {
     try {
       setLoadingResults(true);
       setSelectedRace(race);
+      setActiveResultsTab('winners');
       
-      const response = await fetch(`${BACKEND_URL}/api/race/${race.round}/results`);
-      const data = await response.json();
+      // Check if race has sprint
+      const raceHasSprint = !!race.Sprint;
+      setHasSprint(raceHasSprint);
       
-      if (data?.MRData?.RaceTable?.Races?.[0]?.Results) {
-        setRaceResults(data.MRData.RaceTable.Races[0].Results);
+      // Fetch all results in parallel
+      const [raceResponse, qualifyingResponse, sprintResponse] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/race/${race.round}/results`),
+        fetch(`${BACKEND_URL}/api/race/${race.round}/qualifying`),
+        raceHasSprint ? fetch(`${BACKEND_URL}/api/race/${race.round}/sprint`) : Promise.resolve(null)
+      ]);
+      
+      // Parse race results
+      const raceData = await raceResponse.json();
+      if (raceData?.MRData?.RaceTable?.Races?.[0]?.Results) {
+        const results = raceData.MRData.RaceTable.Races[0].Results;
+        setRaceResults(results);
+        // Get race winner (P1)
+        const winner = results.find((r: any) => r.position === '1');
+        setRaceWinner(winner || null);
       }
+      
+      // Parse qualifying results
+      const qualifyingData = await qualifyingResponse.json();
+      if (qualifyingData?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults) {
+        const qualResults = qualifyingData.MRData.RaceTable.Races[0].QualifyingResults;
+        const poleWinner = qualResults.find((r: any) => r.position === '1');
+        setQualifyingWinner(poleWinner || null);
+      } else {
+        setQualifyingWinner(null);
+      }
+      
+      // Parse sprint results if available
+      if (sprintResponse) {
+        const sprintData = await sprintResponse.json();
+        if (sprintData?.MRData?.RaceTable?.Races?.[0]?.SprintResults) {
+          const sprintResults = sprintData.MRData.RaceTable.Races[0].SprintResults;
+          const sprintWinnerResult = sprintResults.find((r: any) => r.position === '1');
+          setSprintWinner(sprintWinnerResult || null);
+        } else {
+          setSprintWinner(null);
+        }
+      } else {
+        setSprintWinner(null);
+      }
+      
     } catch (error) {
       console.error('Error fetching results:', error);
     } finally {
@@ -115,7 +178,69 @@ export default function ResultsScreen() {
     setRefreshing(true);
     setSelectedRace(null);
     setRaceResults([]);
+    setQualifyingWinner(null);
+    setSprintWinner(null);
+    setRaceWinner(null);
     fetchCompletedRaces();
+  };
+
+  const handleBackToRaces = () => {
+    setSelectedRace(null);
+    setRaceResults([]);
+    setQualifyingWinner(null);
+    setSprintWinner(null);
+    setRaceWinner(null);
+    setActiveResultsTab('winners');
+  };
+
+  const renderWinnerCard = (
+    title: string, 
+    winner: SessionWinner | null, 
+    icon: string, 
+    iconColor: string,
+    timeLabel: string,
+    timeValue?: string
+  ) => {
+    if (!winner) return null;
+    
+    return (
+      <View style={styles.winnerCard}>
+        <View style={styles.winnerHeader}>
+          <View style={styles.winnerIconContainer}>
+            <Ionicons name={icon as any} size={24} color={iconColor} />
+          </View>
+          <Text style={styles.winnerTitle}>{title}</Text>
+        </View>
+        
+        <View style={styles.winnerContent}>
+          <View
+            style={[
+              styles.winnerColorBar,
+              { backgroundColor: getTeamColor(winner.Constructor?.constructorId) },
+            ]}
+          />
+          
+          <View style={styles.winnerInfo}>
+            <View style={styles.winnerNameRow}>
+              <Ionicons name="trophy" size={18} color="#FFD700" />
+              <Text style={styles.winnerName}>
+                {winner.Driver.givenName} {winner.Driver.familyName}
+              </Text>
+              {winner.Driver.code && (
+                <Text style={styles.driverCode}>{winner.Driver.code}</Text>
+              )}
+            </View>
+            <Text style={styles.winnerTeam}>{winner.Constructor?.name}</Text>
+            {timeValue && (
+              <View style={styles.timeRow}>
+                <Text style={styles.timeLabel}>{timeLabel}:</Text>
+                <Text style={styles.timeValue}>{timeValue}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    );
   };
 
   if (loading) {
@@ -166,6 +291,11 @@ export default function ResultsScreen() {
                         day: 'numeric',
                       })}
                     </Text>
+                    {race.Sprint && (
+                      <View style={styles.sprintBadge}>
+                        <Text style={styles.sprintBadgeText}>SPRINT</Text>
+                      </View>
+                    )}
                   </View>
                 </View>
                 
@@ -180,7 +310,7 @@ export default function ResultsScreen() {
           <>
             {/* Race Header */}
             <View style={styles.resultsHeader}>
-              <TouchableOpacity style={styles.backButton} onPress={() => setSelectedRace(null)}>
+              <TouchableOpacity style={styles.backButton} onPress={handleBackToRaces}>
                 <Ionicons name="arrow-back" size={24} color="#E10600" />
                 <Text style={styles.backText}>Back to Races</Text>
               </TouchableOpacity>
@@ -208,14 +338,87 @@ export default function ResultsScreen() {
               </View>
             </View>
 
+            {/* Results Tab Switcher */}
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={[styles.tab, activeResultsTab === 'winners' && styles.activeTab]}
+                onPress={() => setActiveResultsTab('winners')}
+              >
+                <Ionicons
+                  name="trophy"
+                  size={18}
+                  color={activeResultsTab === 'winners' ? '#E10600' : '#999'}
+                />
+                <Text style={[styles.tabText, activeResultsTab === 'winners' && styles.activeTabText]}>
+                  Winners
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.tab, activeResultsTab === 'full' && styles.activeTab]}
+                onPress={() => setActiveResultsTab('full')}
+              >
+                <Ionicons
+                  name="list"
+                  size={18}
+                  color={activeResultsTab === 'full' ? '#E10600' : '#999'}
+                />
+                <Text style={[styles.tabText, activeResultsTab === 'full' && styles.activeTabText]}>
+                  Full Results
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Race Results */}
             {loadingResults ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#E10600" />
+                <Text style={styles.loadingText}>Loading session data...</Text>
+              </View>
+            ) : activeResultsTab === 'winners' ? (
+              <View style={styles.winnersContainer}>
+                <Text style={styles.sectionTitle}>Session Winners</Text>
+                
+                {/* Qualifying Winner */}
+                {renderWinnerCard(
+                  'Qualifying - Pole Position',
+                  qualifyingWinner,
+                  'stopwatch',
+                  '#9B59B6',
+                  'Best Time',
+                  qualifyingWinner?.Q3 || qualifyingWinner?.Q2 || qualifyingWinner?.Q1
+                )}
+                
+                {/* Sprint Winner (only if sprint weekend) */}
+                {hasSprint && renderWinnerCard(
+                  'Sprint Race Winner',
+                  sprintWinner,
+                  'flash',
+                  '#F39C12',
+                  'Time',
+                  sprintWinner?.Time?.time
+                )}
+                
+                {/* Race Winner */}
+                {renderWinnerCard(
+                  'Grand Prix Winner',
+                  raceWinner,
+                  'flag',
+                  '#E10600',
+                  'Time',
+                  raceWinner?.Time?.time
+                )}
+                
+                {!qualifyingWinner && !sprintWinner && !raceWinner && (
+                  <View style={styles.noDataContainer}>
+                    <Ionicons name="information-circle" size={48} color="#666" />
+                    <Text style={styles.noDataText}>No session data available yet</Text>
+                  </View>
+                )}
               </View>
             ) : (
               <View style={styles.resultsContainer}>
-                <Text style={styles.sectionTitle}>Race Results</Text>
+                <Text style={styles.sectionTitle}>Race Classification</Text>
                 {raceResults.map((result, index) => (
                   <View key={result.position} style={styles.resultCard}>
                     <View style={styles.positionSection}>
@@ -345,6 +548,18 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontWeight: '600',
   },
+  sprintBadge: {
+    backgroundColor: '#F39C12',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    marginLeft: 10,
+  },
+  sprintBadgeText: {
+    color: '#000',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
   viewResultsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -406,6 +621,125 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#999',
     marginLeft: 6,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1a1a',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+  },
+  activeTab: {
+    backgroundColor: '#2a2a2a',
+  },
+  tabText: {
+    color: '#999',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  activeTabText: {
+    color: '#E10600',
+  },
+  winnersContainer: {
+    padding: 16,
+  },
+  winnerCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  winnerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  winnerIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2a2a2a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  winnerTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    flex: 1,
+  },
+  winnerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  winnerColorBar: {
+    width: 4,
+    height: 60,
+    borderRadius: 2,
+    marginRight: 14,
+  },
+  winnerInfo: {
+    flex: 1,
+  },
+  winnerNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  winnerName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+    marginLeft: 8,
+    marginRight: 8,
+  },
+  winnerTeam: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 8,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  timeLabel: {
+    fontSize: 13,
+    color: '#666',
+    marginRight: 6,
+  },
+  timeValue: {
+    fontSize: 14,
+    color: '#00D2BE',
+    fontWeight: '600',
+  },
+  noDataContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  noDataText: {
+    color: '#666',
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
   },
   resultsContainer: {
     padding: 16,
