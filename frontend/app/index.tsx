@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -61,8 +60,51 @@ const TEAM_COLORS: { [key: string]: string } = {
   haas: '#FFFFFF',
 };
 
+const COUNTRY_FLAGS: { [key: string]: string } = {
+  'Bahrain': '🇧🇭',
+  'Saudi Arabia': '🇸🇦',
+  'Australia': '🇦🇺',
+  'Japan': '🇯🇵',
+  'China': '🇨🇳',
+  'USA': '🇺🇸',
+  'United States': '🇺🇸',
+  'Italy': '🇮🇹',
+  'Monaco': '🇲🇨',
+  'Canada': '🇨🇦',
+  'Spain': '🇪🇸',
+  'Austria': '🇦🇹',
+  'UK': '🇬🇧',
+  'United Kingdom': '🇬🇧',
+  'Hungary': '🇭🇺',
+  'Belgium': '🇧🇪',
+  'Netherlands': '🇳🇱',
+  'Singapore': '🇸🇬',
+  'Azerbaijan': '🇦🇿',
+  'Mexico': '🇲🇽',
+  'Brazil': '🇧🇷',
+  'Qatar': '🇶🇦',
+  'UAE': '🇦🇪',
+  'Abu Dhabi': '🇦🇪',
+  'Las Vegas': '🇺🇸',
+  'Miami': '🇺🇸',
+};
+
 function getTeamColor(constructorId: string): string {
   return TEAM_COLORS[constructorId] || '#999999';
+}
+
+function getCountryFlag(country: string): string {
+  return COUNTRY_FLAGS[country] || '🏁';
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function getCountdown(raceDate: string, raceTime?: string): { text: string; isPast: boolean } {
@@ -207,11 +249,20 @@ export default function HomeScreen() {
               <Ionicons name="radio" size={20} color="#FFD700" />
               <Text style={[styles.raceLabel, { color: '#FFD700' }]}>LIVE NOW</Text>
             </View>
-            <Text style={styles.raceName}>{currentRace.raceName}</Text>
-            <Text style={styles.raceLocation}>
-              {currentRace.Circuit.Location.locality}, {currentRace.Circuit.Location.country}
-            </Text>
-            <Text style={styles.raceCircuit}>{currentRace.Circuit.circuitName}</Text>
+            <View style={styles.raceMainContent}>
+              <Text style={styles.countryFlag}>{getCountryFlag(currentRace.Circuit.Location.country)}</Text>
+              <View style={styles.raceDetails}>
+                <Text style={styles.raceName}>{currentRace.raceName}</Text>
+                <Text style={styles.raceLocation}>
+                  {currentRace.Circuit.Location.locality}, {currentRace.Circuit.Location.country}
+                </Text>
+                <Text style={styles.raceCircuit}>{currentRace.Circuit.circuitName}</Text>
+                <View style={styles.dateRow}>
+                  <Ionicons name="calendar" size={16} color="#00D2BE" />
+                  <Text style={styles.dateText}>{formatDate(currentRace.date)}</Text>
+                </View>
+              </View>
+            </View>
           </View>
         )}
 
@@ -222,11 +273,20 @@ export default function HomeScreen() {
               <Ionicons name="flag" size={20} color="#E10600" />
               <Text style={styles.raceLabel}>NEXT RACE</Text>
             </View>
-            <Text style={styles.raceName}>{nextRace.raceName}</Text>
-            <Text style={styles.raceLocation}>
-              {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
-            </Text>
-            <Text style={styles.raceCircuit}>{nextRace.Circuit.circuitName}</Text>
+            <View style={styles.raceMainContent}>
+              <Text style={styles.countryFlag}>{getCountryFlag(nextRace.Circuit.Location.country)}</Text>
+              <View style={styles.raceDetails}>
+                <Text style={styles.raceName}>{nextRace.raceName}</Text>
+                <Text style={styles.raceLocation}>
+                  {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
+                </Text>
+                <Text style={styles.raceCircuit}>{nextRace.Circuit.circuitName}</Text>
+                <View style={styles.dateRow}>
+                  <Ionicons name="calendar" size={16} color="#00D2BE" />
+                  <Text style={styles.dateText}>{formatDate(nextRace.date)}</Text>
+                </View>
+              </View>
+            </View>
             <View style={styles.countdownContainer}>
               <Ionicons name="time" size={28} color="#00D2BE" />
               <Text style={styles.countdownText}>{countdown.text}</Text>
@@ -236,30 +296,36 @@ export default function HomeScreen() {
 
         {/* Last Race */}
         {lastRace && (
-          <View style={[styles.raceCard, { opacity: 0.8 }]}>
+          <View style={[styles.raceCard, styles.lastRaceCard]}>
             <View style={styles.raceHeader}>
               <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
               <Text style={[styles.raceLabel, { color: '#00D2BE' }]}>LAST RACE</Text>
             </View>
-            <Text style={styles.raceName}>{lastRace.raceName}</Text>
-            <Text style={styles.raceLocation}>
-              {lastRace.Circuit.Location.locality}, {lastRace.Circuit.Location.country}
-            </Text>
-            <Text style={styles.raceCircuit}>{lastRace.Circuit.circuitName}</Text>
+            <View style={styles.raceMainContent}>
+              <Text style={styles.countryFlag}>{getCountryFlag(lastRace.Circuit.Location.country)}</Text>
+              <View style={styles.raceDetails}>
+                <Text style={styles.raceName}>{lastRace.raceName}</Text>
+                <Text style={styles.raceLocation}>
+                  {lastRace.Circuit.Location.locality}, {lastRace.Circuit.Location.country}
+                </Text>
+                <Text style={styles.raceCircuit}>{lastRace.Circuit.circuitName}</Text>
+                <View style={styles.dateRow}>
+                  <Ionicons name="calendar" size={16} color="#999" />
+                  <Text style={[styles.dateText, { color: '#999' }]}>{formatDate(lastRace.date)}</Text>
+                </View>
+              </View>
+            </View>
           </View>
         )}
 
         {/* Championship Standings */}
         <View style={styles.standingsSection}>
-          <Link href="/standings" asChild>
-            <TouchableOpacity style={styles.sectionHeader}>
-              <View style={styles.sectionTitleRow}>
-                <Ionicons name="trophy" size={24} color="#E10600" />
-                <Text style={styles.sectionTitle}>Championship Standings</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-          </Link>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="trophy" size={24} color="#E10600" />
+              <Text style={styles.sectionTitle}>Championship Standings</Text>
+            </View>
+          </View>
 
           {/* Top Drivers */}
           <Text style={styles.subsectionTitle}>Top Drivers</Text>
@@ -319,49 +385,6 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* Quick Actions Grid */}
-        <View style={styles.grid}>
-          <Link href="/schedule" asChild>
-            <TouchableOpacity style={styles.card}>
-              <View style={[styles.iconContainer, { backgroundColor: '#15151E' }]}>
-                <Ionicons name="calendar" size={32} color="white" />
-              </View>
-              <Text style={styles.cardTitle}>Schedule</Text>
-              <Text style={styles.cardSubtitle}>Full calendar</Text>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/drivers" asChild>
-            <TouchableOpacity style={styles.card}>
-              <View style={[styles.iconContainer, { backgroundColor: '#00D2BE' }]}>
-                <Ionicons name="person" size={32} color="white" />
-              </View>
-              <Text style={styles.cardTitle}>Drivers</Text>
-              <Text style={styles.cardSubtitle}>All drivers</Text>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/teams" asChild>
-            <TouchableOpacity style={styles.card}>
-              <View style={[styles.iconContainer, { backgroundColor: '#FF8700' }]}>
-                <Ionicons name="people" size={32} color="white" />
-              </View>
-              <Text style={styles.cardTitle}>Teams</Text>
-              <Text style={styles.cardSubtitle}>All constructors</Text>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/standings" asChild>
-            <TouchableOpacity style={styles.card}>
-              <View style={[styles.iconContainer, { backgroundColor: '#E10600' }]}>
-                <Ionicons name="trophy" size={32} color="white" />
-              </View>
-              <Text style={styles.cardTitle}>Full Standings</Text>
-              <Text style={styles.cardSubtitle}>Complete rankings</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-
         {/* Disclaimer */}
         <View style={styles.disclaimer}>
           <Text style={styles.disclaimerText}>
@@ -419,10 +442,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#E10600',
   },
+  lastRaceCard: {
+    opacity: 0.8,
+    borderColor: '#00D2BE',
+  },
   raceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   raceLabel: {
     fontSize: 12,
@@ -430,21 +457,42 @@ const styles = StyleSheet.create({
     color: '#E10600',
     marginLeft: 8,
   },
+  raceMainContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  countryFlag: {
+    fontSize: 48,
+    marginRight: 16,
+  },
+  raceDetails: {
+    flex: 1,
+  },
   raceName: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   raceLocation: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#ccc',
     marginBottom: 4,
   },
   raceCircuit: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#999',
-    marginBottom: 12,
+    marginBottom: 10,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#00D2BE',
+    fontWeight: '600',
+    marginLeft: 6,
   },
   countdownContainer: {
     flexDirection: 'row',
@@ -452,6 +500,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#15151E',
     padding: 12,
     borderRadius: 10,
+    marginTop: 16,
   },
   countdownText: {
     fontSize: 24,
@@ -539,47 +588,6 @@ const styles = StyleSheet.create({
   pointsLabel: {
     fontSize: 10,
     color: '#999',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 24,
-    marginHorizontal: -8,
-  },
-  card: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-    margin: 8,
-  },
-  premiumCard: {
-    borderWidth: 2,
-    borderColor: '#FFD700',
-    backgroundColor: '#1a1a0a',
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'white',
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
   },
   disclaimer: {
     padding: 16,
