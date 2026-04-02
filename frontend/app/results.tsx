@@ -21,33 +21,6 @@ const TEAM_COLORS: { [key: string]: string } = {
   haas: '#FFFFFF',
 };
 
-function getTeamColor(constructorId: string): string {
-  return TEAM_COLORS[constructorId] || '#999999';
-}
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
-const TEAM_COLORS: { [key: string]: string } = {
-  red_bull: '#0600EF',
-  ferrari: '#DC0000',
-  mercedes: '#00D2BE',
-  mclaren: '#FF8700',
-  alpine: '#0090FF',
-  aston_martin: '#006F62',
-  williams: '#005AFF',
-  alphatauri: '#2B4562',
-  rb: '#2B4562',
-  alfa: '#900000',
-  kick_sauber: '#00FF00',
-  sauber: '#00FF00',
-  haas: '#FFFFFF',
-};
-
 const COUNTRY_FLAGS: { [key: string]: string } = {
   Bahrain: '🇧🇭',
   'Saudi Arabia': '🇸🇦',
