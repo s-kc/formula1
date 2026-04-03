@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -125,6 +126,7 @@ function getCountdown(raceDate: string, raceTime?: string): { text: string; isPa
 }
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [races, setRaces] = useState<Race[]>([]);
   const [driverStandings, setDriverStandings] = useState<DriverStanding[]>([]);
   const [constructorStandings, setConstructorStandings] = useState<ConstructorStanding[]>([]);
@@ -210,6 +212,10 @@ export default function HomeScreen() {
     });
   };
 
+  const handleLastRacePress = () => {
+    router.push('/results');
+  };
+
   const nextRace = getNextRace();
   const lastRace = getLastRace();
   const currentRace = getCurrentRace();
@@ -287,19 +293,30 @@ export default function HomeScreen() {
                 </View>
               </View>
             </View>
-            <View style={styles.countdownContainer}>
-              <Ionicons name="time" size={28} color="#00D2BE" />
-              <Text style={styles.countdownText}>{countdown.text}</Text>
+            {/* Centered Countdown Timer */}
+            <View style={styles.countdownWrapper}>
+              <View style={styles.countdownBadge}>
+                <Ionicons name="time" size={14} color="#FFF" />
+                <Text style={styles.countdownBadgeText}>{countdown.text}</Text>
+              </View>
             </View>
           </View>
         )}
 
-        {/* Last Race */}
+        {/* Last Race - Clickable */}
         {lastRace && (
-          <View style={[styles.raceCard, styles.lastRaceCard]}>
+          <TouchableOpacity 
+            style={[styles.raceCard, styles.lastRaceCard]}
+            onPress={handleLastRacePress}
+            activeOpacity={0.7}
+          >
             <View style={styles.raceHeader}>
               <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
               <Text style={[styles.raceLabel, { color: '#00D2BE' }]}>LAST RACE</Text>
+              <View style={styles.viewResultsIndicator}>
+                <Text style={styles.viewResultsText}>View Results</Text>
+                <Ionicons name="chevron-forward" size={16} color="#00D2BE" />
+              </View>
             </View>
             <View style={styles.raceMainContent}>
               <Text style={styles.countryFlag}>{getCountryFlag(lastRace.Circuit.Location.country)}</Text>
@@ -315,7 +332,7 @@ export default function HomeScreen() {
                 </View>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
 
         {/* Championship Standings */}
@@ -443,7 +460,6 @@ const styles = StyleSheet.create({
     borderColor: '#E10600',
   },
   lastRaceCard: {
-    opacity: 0.8,
     borderColor: '#00D2BE',
   },
   raceHeader: {
@@ -456,6 +472,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#E10600',
     marginLeft: 8,
+    flex: 1,
+  },
+  viewResultsIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewResultsText: {
+    fontSize: 12,
+    color: '#00D2BE',
+    fontWeight: '600',
+    marginRight: 4,
   },
   raceMainContent: {
     flexDirection: 'row',
@@ -494,19 +521,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 6,
   },
-  countdownContainer: {
-    flexDirection: 'row',
+  countdownWrapper: {
     alignItems: 'center',
-    backgroundColor: '#15151E',
-    padding: 12,
-    borderRadius: 10,
     marginTop: 16,
   },
-  countdownText: {
-    fontSize: 24,
+  countdownBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E10600',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  countdownBadgeText: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#00D2BE',
-    marginLeft: 10,
+    color: '#FFF',
+    marginLeft: 6,
   },
   standingsSection: {
     backgroundColor: '#1a1a1a',
