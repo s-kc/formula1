@@ -41,6 +41,7 @@ interface ConstructorStanding {
   points: string;
   wins: string;
   Constructor: {
+    constructorId: string;
     name: string;
   };
 }
@@ -208,7 +209,7 @@ export default function HomeScreen() {
     return races.find((race) => {
       const raceDateTime = new Date(race.time ? `${race.date}T${race.time}` : `${race.date}T14:00:00Z`);
       const diffHours = (raceDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-      return diffHours >= -3 && diffHours <= 0; // Race happening or just finished (within 3 hours)
+      return diffHours >= -3 && diffHours <= 0;
     });
   };
 
@@ -239,33 +240,36 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
         }
       >
-        {/* Header */}
+        {/* Header - Formula ONE Tracker style */}
         <View style={styles.header}>
           <View style={styles.headerTitle}>
-            <Ionicons name="flag" size={32} color="#E10600" />
-            <Text style={styles.title}>Formula 1 Tracker</Text>
+            <Text style={styles.titleFormula}>Formula </Text>
+            <Text style={styles.titleOne}>ONE</Text>
           </View>
-          <Text style={styles.subtitle}>Your ultimate F1 companion</Text>
+          <Text style={styles.titleTracker}>TRACKER</Text>
         </View>
 
         {/* Current Race */}
         {currentRace && (
-          <View style={[styles.raceCard, { borderColor: '#FFD700' }]}>
-            <View style={styles.raceHeader}>
-              <Ionicons name="radio" size={20} color="#FFD700" />
-              <Text style={[styles.raceLabel, { color: '#FFD700' }]}>LIVE NOW</Text>
-            </View>
-            <View style={styles.raceMainContent}>
-              <Text style={styles.countryFlag}>{getCountryFlag(currentRace.Circuit.Location.country)}</Text>
-              <View style={styles.raceDetails}>
-                <Text style={styles.raceName}>{currentRace.raceName}</Text>
-                <Text style={styles.raceLocation}>
-                  {currentRace.Circuit.Location.locality}, {currentRace.Circuit.Location.country}
-                </Text>
-                <Text style={styles.raceCircuit}>{currentRace.Circuit.circuitName}</Text>
-                <View style={styles.dateRow}>
-                  <Ionicons name="calendar" size={16} color="#00D2BE" />
-                  <Text style={styles.dateText}>{formatDate(currentRace.date)}</Text>
+          <View style={styles.raceCard}>
+            <View style={styles.cardLeftBorder} />
+            <View style={styles.cardContent}>
+              <View style={styles.raceHeader}>
+                <Ionicons name="radio" size={18} color="#FFD700" />
+                <Text style={[styles.raceLabel, { color: '#FFD700' }]}>LIVE NOW</Text>
+              </View>
+              <View style={styles.raceMainContent}>
+                <Text style={styles.countryFlag}>{getCountryFlag(currentRace.Circuit.Location.country)}</Text>
+                <View style={styles.raceDetails}>
+                  <Text style={styles.raceName}>{currentRace.raceName}</Text>
+                  <Text style={styles.raceLocation}>
+                    {currentRace.Circuit.Location.locality}, {currentRace.Circuit.Location.country}
+                  </Text>
+                  <Text style={styles.raceCircuit}>{currentRace.Circuit.circuitName}</Text>
+                  <View style={styles.dateRow}>
+                    <Ionicons name="calendar" size={14} color="#888" />
+                    <Text style={styles.dateText}>{formatDate(currentRace.date)}</Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -275,29 +279,32 @@ export default function HomeScreen() {
         {/* Next Race */}
         {nextRace && (
           <View style={styles.raceCard}>
-            <View style={styles.raceHeader}>
-              <Ionicons name="flag" size={20} color="#E10600" />
-              <Text style={styles.raceLabel}>NEXT RACE</Text>
-            </View>
-            <View style={styles.raceMainContent}>
-              <Text style={styles.countryFlag}>{getCountryFlag(nextRace.Circuit.Location.country)}</Text>
-              <View style={styles.raceDetails}>
-                <Text style={styles.raceName}>{nextRace.raceName}</Text>
-                <Text style={styles.raceLocation}>
-                  {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
-                </Text>
-                <Text style={styles.raceCircuit}>{nextRace.Circuit.circuitName}</Text>
-                <View style={styles.dateRow}>
-                  <Ionicons name="calendar" size={16} color="#00D2BE" />
-                  <Text style={styles.dateText}>{formatDate(nextRace.date)}</Text>
+            <View style={styles.cardLeftBorder} />
+            <View style={styles.cardContent}>
+              <View style={styles.raceHeader}>
+                <Ionicons name="flag" size={18} color="#E10600" />
+                <Text style={styles.raceLabel}>NEXT RACE</Text>
+              </View>
+              <View style={styles.raceMainContent}>
+                <Text style={styles.countryFlag}>{getCountryFlag(nextRace.Circuit.Location.country)}</Text>
+                <View style={styles.raceDetails}>
+                  <Text style={styles.raceName}>{nextRace.raceName}</Text>
+                  <Text style={styles.raceLocation}>
+                    {nextRace.Circuit.Location.locality}, {nextRace.Circuit.Location.country}
+                  </Text>
+                  <Text style={styles.raceCircuit}>{nextRace.Circuit.circuitName}</Text>
+                  <View style={styles.dateRow}>
+                    <Ionicons name="calendar" size={14} color="#888" />
+                    <Text style={styles.dateText}>{formatDate(nextRace.date)}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-            {/* Centered Countdown Timer */}
-            <View style={styles.countdownWrapper}>
-              <View style={styles.countdownBadge}>
-                <Ionicons name="time" size={14} color="#FFF" />
-                <Text style={styles.countdownBadgeText}>{countdown.text}</Text>
+              {/* Centered Countdown Timer */}
+              <View style={styles.countdownWrapper}>
+                <View style={styles.countdownBadge}>
+                  <Ionicons name="time" size={14} color="#FFF" />
+                  <Text style={styles.countdownBadgeText}>{countdown.text}</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -306,29 +313,32 @@ export default function HomeScreen() {
         {/* Last Race - Clickable */}
         {lastRace && (
           <TouchableOpacity 
-            style={[styles.raceCard, styles.lastRaceCard]}
+            style={styles.raceCard}
             onPress={handleLastRacePress}
             activeOpacity={0.7}
           >
-            <View style={styles.raceHeader}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D2BE" />
-              <Text style={[styles.raceLabel, { color: '#00D2BE' }]}>LAST RACE</Text>
-              <View style={styles.viewResultsIndicator}>
-                <Text style={styles.viewResultsText}>View Results</Text>
-                <Ionicons name="chevron-forward" size={16} color="#00D2BE" />
+            <View style={[styles.cardLeftBorder, { backgroundColor: '#00D2BE' }]} />
+            <View style={styles.cardContent}>
+              <View style={styles.raceHeader}>
+                <Ionicons name="checkmark-circle" size={18} color="#00D2BE" />
+                <Text style={[styles.raceLabel, { color: '#00D2BE' }]}>LAST RACE</Text>
+                <View style={styles.viewResultsIndicator}>
+                  <Text style={styles.viewResultsText}>View Results</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#00D2BE" />
+                </View>
               </View>
-            </View>
-            <View style={styles.raceMainContent}>
-              <Text style={styles.countryFlag}>{getCountryFlag(lastRace.Circuit.Location.country)}</Text>
-              <View style={styles.raceDetails}>
-                <Text style={styles.raceName}>{lastRace.raceName}</Text>
-                <Text style={styles.raceLocation}>
-                  {lastRace.Circuit.Location.locality}, {lastRace.Circuit.Location.country}
-                </Text>
-                <Text style={styles.raceCircuit}>{lastRace.Circuit.circuitName}</Text>
-                <View style={styles.dateRow}>
-                  <Ionicons name="calendar" size={16} color="#999" />
-                  <Text style={[styles.dateText, { color: '#999' }]}>{formatDate(lastRace.date)}</Text>
+              <View style={styles.raceMainContent}>
+                <Text style={styles.countryFlag}>{getCountryFlag(lastRace.Circuit.Location.country)}</Text>
+                <View style={styles.raceDetails}>
+                  <Text style={styles.raceName}>{lastRace.raceName}</Text>
+                  <Text style={styles.raceLocation}>
+                    {lastRace.Circuit.Location.locality}, {lastRace.Circuit.Location.country}
+                  </Text>
+                  <Text style={styles.raceCircuit}>{lastRace.Circuit.circuitName}</Text>
+                  <View style={styles.dateRow}>
+                    <Ionicons name="calendar" size={14} color="#888" />
+                    <Text style={styles.dateText}>{formatDate(lastRace.date)}</Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -336,70 +346,79 @@ export default function HomeScreen() {
         )}
 
         {/* Championship Standings */}
-        <View style={styles.standingsSection}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleRow}>
-              <Ionicons name="trophy" size={24} color="#E10600" />
-              <Text style={styles.sectionTitle}>Championship Standings</Text>
+        <View style={styles.standingsCard}>
+          <View style={styles.cardLeftBorder} />
+          <View style={styles.cardContent}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleRow}>
+                <Ionicons name="trophy" size={22} color="#E10600" />
+                <Text style={styles.sectionTitle}>Championship Standings</Text>
+              </View>
             </View>
+
+            {/* Top Drivers */}
+            <Text style={styles.subsectionTitle}>Top Drivers</Text>
+            {driverStandings.map((standing, index) => (
+              <View key={standing.Driver.familyName} style={styles.standingRow}>
+                <View style={styles.standingPosition}>
+                  <Text style={styles.positionText}>{standing.position}</Text>
+                  {index < 3 && (
+                    <Ionicons
+                      name="trophy"
+                      size={12}
+                      color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
+                    />
+                  )}
+                </View>
+                <View
+                  style={[
+                    styles.teamColorBar,
+                    { backgroundColor: getTeamColor(standing.Constructors[0]?.constructorId) },
+                  ]}
+                />
+                <View style={styles.standingInfo}>
+                  <Text style={styles.driverNameSmall}>
+                    {standing.Driver.givenName} {standing.Driver.familyName}
+                  </Text>
+                  <Text style={styles.teamNameSmall}>{standing.Constructors[0]?.name}</Text>
+                </View>
+                <View style={styles.standingPoints}>
+                  <Text style={styles.pointsText}>{standing.points}</Text>
+                  <Text style={styles.pointsLabel}>PTS</Text>
+                </View>
+              </View>
+            ))}
+
+            {/* Top Constructors */}
+            <Text style={[styles.subsectionTitle, { marginTop: 16 }]}>Top Constructors</Text>
+            {constructorStandings.map((standing, index) => (
+              <View key={standing.Constructor.name} style={styles.standingRow}>
+                <View style={styles.standingPosition}>
+                  <Text style={styles.positionText}>{standing.position}</Text>
+                  {index < 3 && (
+                    <Ionicons
+                      name="trophy"
+                      size={12}
+                      color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
+                    />
+                  )}
+                </View>
+                <View
+                  style={[
+                    styles.teamColorBar,
+                    { backgroundColor: getTeamColor(standing.Constructor?.constructorId) },
+                  ]}
+                />
+                <View style={styles.standingInfo}>
+                  <Text style={styles.driverNameSmall}>{standing.Constructor.name}</Text>
+                </View>
+                <View style={styles.standingPoints}>
+                  <Text style={styles.pointsText}>{standing.points}</Text>
+                  <Text style={styles.pointsLabel}>PTS</Text>
+                </View>
+              </View>
+            ))}
           </View>
-
-          {/* Top Drivers */}
-          <Text style={styles.subsectionTitle}>Top Drivers</Text>
-          {driverStandings.map((standing, index) => (
-            <View key={standing.Driver.familyName} style={styles.standingRow}>
-              <View style={styles.standingPosition}>
-                <Text style={styles.positionText}>{standing.position}</Text>
-                {index < 3 && (
-                  <Ionicons
-                    name="trophy"
-                    size={12}
-                    color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
-                  />
-                )}
-              </View>
-              <View
-                style={[
-                  styles.teamColorBar,
-                  { backgroundColor: getTeamColor(standing.Constructors[0]?.constructorId) },
-                ]}
-              />
-              <View style={styles.standingInfo}>
-                <Text style={styles.driverNameSmall}>
-                  {standing.Driver.givenName} {standing.Driver.familyName}
-                </Text>
-                <Text style={styles.teamNameSmall}>{standing.Constructors[0]?.name}</Text>
-              </View>
-              <View style={styles.standingPoints}>
-                <Text style={styles.pointsText}>{standing.points}</Text>
-                <Text style={styles.pointsLabel}>PTS</Text>
-              </View>
-            </View>
-          ))}
-
-          {/* Top Constructors */}
-          <Text style={[styles.subsectionTitle, { marginTop: 16 }]}>Top Constructors</Text>
-          {constructorStandings.map((standing, index) => (
-            <View key={standing.Constructor.name} style={styles.standingRow}>
-              <View style={styles.standingPosition}>
-                <Text style={styles.positionText}>{standing.position}</Text>
-                {index < 3 && (
-                  <Ionicons
-                    name="trophy"
-                    size={12}
-                    color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
-                  />
-                )}
-              </View>
-              <View style={styles.standingInfo}>
-                <Text style={styles.driverNameSmall}>{standing.Constructor.name}</Text>
-              </View>
-              <View style={styles.standingPoints}>
-                <Text style={styles.pointsText}>{standing.points}</Text>
-                <Text style={styles.pointsLabel}>PTS</Text>
-              </View>
-            </View>
-          ))}
         </View>
 
         {/* Disclaimer */}
@@ -439,33 +458,52 @@ const styles = StyleSheet.create({
   headerTitle: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  titleFormula: {
+    fontSize: 36,
+    fontWeight: '900',
     color: 'white',
-    marginLeft: 12,
+    letterSpacing: 1,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#999',
+  titleOne: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#E10600',
+    letterSpacing: 1,
+  },
+  titleTracker: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#888',
+    letterSpacing: 8,
+    marginTop: 4,
   },
   raceCard: {
+    flexDirection: 'row',
     backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#E10600',
+    overflow: 'hidden',
   },
-  lastRaceCard: {
-    borderColor: '#00D2BE',
+  standingsCard: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  cardLeftBorder: {
+    width: 4,
+    backgroundColor: '#E10600',
+  },
+  cardContent: {
+    flex: 1,
+    padding: 16,
   },
   raceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   raceLabel: {
     fontSize: 12,
@@ -489,41 +527,40 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   countryFlag: {
-    fontSize: 48,
-    marginRight: 16,
+    fontSize: 42,
+    marginRight: 14,
   },
   raceDetails: {
     flex: 1,
   },
   raceName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   raceLocation: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#ccc',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   raceCircuit: {
     fontSize: 13,
-    color: '#999',
-    marginBottom: 10,
+    color: '#888',
+    marginBottom: 8,
   },
   dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 14,
-    color: '#00D2BE',
-    fontWeight: '600',
+    fontSize: 13,
+    color: '#888',
     marginLeft: 6,
   },
   countdownWrapper: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 14,
   },
   countdownBadge: {
     flexDirection: 'row',
@@ -539,14 +576,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginLeft: 6,
   },
-  standingsSection: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -558,16 +587,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
     marginLeft: 10,
   },
   subsectionTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#999',
-    marginBottom: 12,
+    color: '#888',
+    marginBottom: 10,
     marginTop: 4,
   },
   standingRow: {
@@ -581,7 +610,7 @@ const styles = StyleSheet.create({
   standingPosition: {
     width: 32,
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 8,
   },
   positionText: {
     fontSize: 16,
@@ -592,11 +621,10 @@ const styles = StyleSheet.create({
     width: 3,
     height: 36,
     borderRadius: 2,
-    marginLeft: 10,
+    marginRight: 12,
   },
   standingInfo: {
     flex: 1,
-    marginLeft: 10,
   },
   driverNameSmall: {
     fontSize: 15,
@@ -606,7 +634,7 @@ const styles = StyleSheet.create({
   },
   teamNameSmall: {
     fontSize: 12,
-    color: '#999',
+    color: '#888',
   },
   standingPoints: {
     alignItems: 'flex-end',
@@ -618,7 +646,7 @@ const styles = StyleSheet.create({
   },
   pointsLabel: {
     fontSize: 10,
-    color: '#999',
+    color: '#888',
   },
   disclaimer: {
     padding: 16,
@@ -628,7 +656,7 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#888',
     textAlign: 'center',
     lineHeight: 18,
   },
