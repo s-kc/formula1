@@ -169,6 +169,11 @@ export default function CalendarScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Page Header */}
+      <View style={styles.pageHeader}>
+        <Text style={styles.pageTitle}>Race Calendar</Text>
+      </View>
+
       {/* Tab Switcher */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -309,6 +314,18 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 16,
     fontSize: 16,
+  },
+  pageHeader: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+    alignItems: 'center',
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
   },
   scrollView: {
     flex: 1,

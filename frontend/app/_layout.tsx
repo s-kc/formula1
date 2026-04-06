@@ -60,7 +60,7 @@ export default function TabLayout() {
         options={{
           title: 'Teams',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="build" size={size} color={color} />
+            <Ionicons name="hammer" size={size} color={color} />
           ),
         }}
       />

@@ -83,12 +83,23 @@ export default function TeamsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Page Header */}
+      <View style={styles.pageHeader}>
+        <Text style={styles.pageTitle}>Constructors</Text>
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
         }
       >
+        {/* Section Header */}
+        <View style={styles.sectionHeader}>
+          <Ionicons name="hammer" size={20} color="#E10600" />
+          <Text style={styles.sectionTitle}>Constructors Championship</Text>
+        </View>
+
         <View style={styles.standingsContainer}>
           {constructorStandings.map((standing, index) => (
             <View key={standing.Constructor.constructorId} style={styles.standingCard}>
@@ -148,11 +159,37 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
   },
+  pageHeader: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+    alignItems: 'center',
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
   scrollView: {
     flex: 1,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ccc',
+    marginLeft: 8,
+  },
   standingsContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   standingCard: {
     flexDirection: 'row',
