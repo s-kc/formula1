@@ -96,7 +96,7 @@ export default function TeamsScreen() {
       >
         {/* Section Header */}
         <View style={styles.sectionHeader}>
-          <Ionicons name="hammer" size={20} color="#E10600" />
+          <Ionicons name="construct" size={20} color="#E10600" />
           <Text style={styles.sectionTitle}>Constructors Championship</Text>
         </View>
 
