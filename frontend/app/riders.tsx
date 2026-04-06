@@ -115,6 +115,12 @@ export default function RidersScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E10600" />
         }
       >
+        {/* Section Header */}
+        <View style={styles.sectionHeader}>
+          <Ionicons name="person" size={20} color="#E10600" />
+          <Text style={styles.sectionTitle}>Drivers Championship</Text>
+        </View>
+
         <View style={styles.standingsContainer}>
           {driverStandings.map((standing, index) => (
             <View key={standing.Driver.driverId} style={styles.standingCard}>
@@ -224,8 +230,22 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ccc',
+    marginLeft: 8,
+  },
   standingsContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   standingCard: {
     flexDirection: 'row',

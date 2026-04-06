@@ -296,7 +296,10 @@ export default function ResultsScreen() {
       >
         {!selectedRace ? (
           <View style={styles.racesListContainer}>
-            <Text style={styles.sectionTitle}>Completed Races</Text>
+            {/* Page Header */}
+            <View style={styles.pageHeader}>
+              <Text style={styles.pageTitle}>Completed Races</Text>
+            </View>
             {completedRaces.map((race) => (
               <TouchableOpacity
                 key={race.round}
@@ -522,6 +525,16 @@ const styles = StyleSheet.create({
   },
   racesListContainer: {
     padding: 16,
+    paddingTop: 0,
+  },
+  pageHeader: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
   },
   sectionTitle: {
     fontSize: 20,
