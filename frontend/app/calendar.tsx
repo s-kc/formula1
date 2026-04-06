@@ -168,7 +168,7 @@ export default function CalendarScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Tab Switcher */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
